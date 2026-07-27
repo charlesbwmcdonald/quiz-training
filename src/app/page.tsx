@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const features = [
   {
@@ -34,9 +35,14 @@ export default function Home() {
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-12 w-16 items-center justify-center bg-[#D90000] px-2 text-center text-sm font-extrabold italic leading-none text-white">
-              GEN-Y
-            </div>
+            <Image
+  src="/GENYHitch_BlackText2024.png"
+  alt="Gen-Y Hitch"
+  width={220}
+  height={48}
+  priority
+  className="h-12 w-auto"
+/>
 
             <div>
               <p className="text-lg font-extrabold uppercase tracking-tight">
