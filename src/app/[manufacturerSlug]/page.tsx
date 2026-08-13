@@ -1,16 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPublicBrand } from "@/lib/branding";
+import { getPublicBrand, getPublicLandingExperience } from "@/lib/branding";
+import { AnnouncementBar, ProductCarousel } from "@/components/landing-experience";
 
 export default async function ManufacturerLandingPage({ params }: { params: Promise<{ manufacturerSlug: string }> }) {
   const { manufacturerSlug } = await params;
-  const brand = await getPublicBrand(manufacturerSlug);
+  const [brand, experience] = await Promise.all([getPublicBrand(manufacturerSlug), getPublicLandingExperience(manufacturerSlug)]);
   if (!brand) notFound();
+  const settings = experience?.settings ?? {};
+  const announcements = settings.announcements?.length ? settings.announcements : brand.promo_enabled && brand.promo_text ? [{ text: brand.promo_text, url: brand.promo_link_url ?? undefined }] : [];
 
   return (
     <main className="min-h-screen bg-white text-black">
-      {brand.promo_enabled && brand.promo_text && <div className="px-5 py-3 text-center text-sm font-bold text-white" style={{backgroundColor:brand.primary_color}}><span>{brand.promo_text}</span>{brand.promo_link_url && <a href={brand.promo_link_url} className="ml-3 underline underline-offset-4">{brand.promo_link_text || "Learn more"} ↗</a>}</div>}
+      {brand.promo_enabled && <AnnouncementBar announcements={announcements} color={brand.primary_color} />}
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
           <Link href={`/m/${brand.slug}`} className="flex items-center gap-4">
@@ -36,12 +39,14 @@ export default async function ManufacturerLandingPage({ params }: { params: Prom
 
       {brand.banner_image_url && <section className="mx-auto max-w-7xl px-5 pt-12 lg:px-8">{brand.banner_link_url ? <a href={brand.banner_link_url} target="_blank" rel="noreferrer"><Image src={brand.banner_image_url} alt={`${brand.name} featured banner`} width={1600} height={420} className="h-auto w-full object-cover" unoptimized/></a> : <Image src={brand.banner_image_url} alt={`${brand.name} featured banner`} width={1600} height={420} className="h-auto w-full object-cover" unoptimized/>}</section>}
 
+      {settings.carousel?.enabled && <ProductCarousel products={experience?.products ?? []} manufacturerSlug={brand.slug} color={brand.primary_color} autoplay={settings.carousel.autoplay ?? true} />}
+
       <section id="benefits" className="px-5 py-20 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className="text-sm font-extrabold uppercase italic tracking-[0.22em]" style={{ color: brand.primary_color }}>Built for product experts</p>
           <h2 className="mt-4 max-w-3xl text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">Learn the products. Help customers choose with confidence.</h2>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {[['Product Training', `Understand ${brand.name} products, applications, features, and customer benefits.`], ['Knowledge Checks', 'Complete focused quizzes that reinforce key product information.'], ['Progress Tracking', 'Keep training current and give managers visibility into team progress.']].map(([title, copy], index) => <article key={title} className="border border-black/10 p-7 shadow-sm"><div className="grid h-11 w-11 place-items-center text-sm font-extrabold text-white" style={{ backgroundColor: index === 0 ? brand.primary_color : brand.secondary_color }}>0{index + 1}</div><h3 className="mt-6 text-xl font-extrabold uppercase">{title}</h3><p className="mt-3 leading-7 text-black/60">{copy}</p></article>)}
+          <div className={`mt-12 grid gap-5 ${settings.layout === "masonry" ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3"}`}>
+            {[['Product Training', `Understand ${brand.name} products, applications, features, and customer benefits.`], ['Knowledge Checks', 'Complete focused quizzes that reinforce key product information.'], ['Progress Tracking', 'Keep training current and give managers visibility into team progress.']].map(([title, copy], index) => <article key={title} className={`border border-black/10 p-7 shadow-sm ${settings.layout === "masonry" ? index === 0 ? "md:col-span-2 lg:row-span-2 lg:p-10" : index === 2 ? "lg:col-span-2" : "" : ""}`}><div className="grid h-11 w-11 place-items-center text-sm font-extrabold text-white" style={{ backgroundColor: index === 0 ? brand.primary_color : brand.secondary_color }}>0{index + 1}</div><h3 className={`${settings.layout === "masonry" && index === 0 ? "mt-10 text-3xl sm:text-4xl" : "mt-6 text-xl"} font-extrabold uppercase`}>{title}</h3><p className="mt-3 leading-7 text-black/60">{copy}</p></article>)}
           </div>
         </div>
       </section>

@@ -26,6 +26,18 @@ export type ManufacturerBrand = {
   can_view_reports?: boolean;
 };
 
+export type LandingExperience = {
+  login?: { headline?: string; description?: string; image_url?: string | null };
+  announcements?: { text: string; url?: string }[];
+  carousel?: { enabled?: boolean; autoplay?: boolean; product_ids?: string[] };
+  layout?: "standard" | "masonry";
+};
+
+export type PublicLandingExperience = {
+  settings: LandingExperience;
+  products: { id: string; name: string; slug: string; tagline: string | null; image: string | null }[];
+};
+
 export async function getPublicBrand(slug?: string | null) {
   if (!slug) return null;
   const supabase = await createSupabaseServerClient();
@@ -41,4 +53,12 @@ export async function getActiveBrand() {
   const { data, error } = await supabase.rpc("get_active_manufacturer_brand");
   if (error || !data?.[0]) return null;
   return data[0] as ManufacturerBrand;
+}
+
+export async function getPublicLandingExperience(slug?: string | null) {
+  if (!slug) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_public_landing_experience", { manufacturer_slug: slug });
+  if (error || !data) return null;
+  return data as PublicLandingExperience;
 }

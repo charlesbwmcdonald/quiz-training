@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { LandingExperience } from "@/lib/branding";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -25,14 +26,27 @@ export async function updateBranding(formData: FormData) {
   const promoLinkText = String(formData.get("promoLinkText") ?? "").trim();
   const bannerLinkUrl = String(formData.get("bannerLinkUrl") ?? "").trim();
   const customHtml = String(formData.get("customHtml") ?? "").trim();
+  const loginHeadline = String(formData.get("loginHeadline") ?? "").trim();
+  const loginDescription = String(formData.get("loginDescription") ?? "").trim();
+  const announcements = String(formData.get("announcements") ?? "").split("\n").map((line) => {
+    const [text, ...urlParts] = line.split("|");
+    return { text: text.trim(), url: urlParts.join("|").trim() };
+  }).filter((item) => item.text).slice(0, 8);
+  const carouselEnabled = formData.get("carouselEnabled") === "on";
+  const carouselAutoplay = formData.get("carouselAutoplay") === "on";
+  const featuredProductIds = formData.getAll("featuredProductIds").map(String).filter(Boolean).slice(0, 12);
+  const landingLayout = formData.get("landingLayout") === "masonry" ? "masonry" : "standard";
   const logo = formData.get("logo");
   const heroImage = formData.get("heroImage");
   const bannerImage = formData.get("bannerImage");
+  const loginImage = formData.get("loginImage");
   const fail = (message: string): never => redirect(`/app/settings/branding?error=${encodeURIComponent(message)}`);
 
   if (!manufacturerId || !name) fail("Manufacturer name is required.");
   if (!HEX.test(primaryColor) || !HEX.test(secondaryColor)) fail("Choose valid six-digit brand colors.");
   if (headline.length > 140 || description.length > 500) fail("The landing-page text is too long.");
+  if (loginHeadline.length > 120 || loginDescription.length > 400) fail("The sign-in text is too long.");
+  if (announcements.some((item) => item.url && !/^https?:\/\//i.test(item.url))) fail("Announcement links must start with http:// or https://.");
 
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -61,8 +75,26 @@ export async function updateBranding(formData: FormData) {
   };
   const heroImageUrl = await uploadBrandImage(heroImage, "Hero image");
   const bannerImageUrl = await uploadBrandImage(bannerImage, "Banner image");
+  const loginImageUrl = await uploadBrandImage(loginImage, "Login image");
 
-  const updates: Record<string, string | number | boolean> = {
+  const landingExperience: LandingExperience = {
+    login: {
+      headline: loginHeadline || "Welcome to your training center",
+      description: loginDescription || "Sign in to continue your product training.",
+      ...(loginImageUrl ? { image_url: loginImageUrl } : {}),
+    },
+    announcements,
+    carousel: { enabled: carouselEnabled, autoplay: carouselAutoplay, product_ids: featuredProductIds },
+    layout: landingLayout,
+  };
+
+  if (!loginImageUrl) {
+    const { data: existing } = await supabase.from("manufacturers").select("landing_experience").eq("id", manufacturerId).single();
+    const existingUrl = (existing?.landing_experience as { login?: { image_url?: string } } | null)?.login?.image_url;
+    if (existingUrl && landingExperience.login) landingExperience.login.image_url = existingUrl;
+  }
+
+  const updates: Record<string, string | number | boolean | object> = {
     name,
     primary_color: primaryColor.toUpperCase(),
     secondary_color: secondaryColor.toUpperCase(),
@@ -78,6 +110,7 @@ export async function updateBranding(formData: FormData) {
     promo_link_text: promoLinkText,
     banner_link_url: bannerLinkUrl,
     custom_html: customHtml,
+    landing_experience: landingExperience,
   };
   if (logoUrl) updates.logo_url = logoUrl;
   if (heroImageUrl) updates.hero_image_url = heroImageUrl;

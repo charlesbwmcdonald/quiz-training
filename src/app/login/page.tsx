@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getPublicBrand } from "@/lib/branding";
+import { getPublicBrand, getPublicLandingExperience } from "@/lib/branding";
 import { login } from "./actions";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ brand?: string; next?: string }> }): Promise<Metadata> {
@@ -17,18 +17,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const next = params?.next ?? "/app";
   const platformLogin = next.startsWith("/platform");
-  const brand = await getPublicBrand(params.brand);
+  const [brand, experience] = await Promise.all([getPublicBrand(params.brand), getPublicLandingExperience(params.brand)]);
   const primary = brand?.primary_color ?? "#D90000";
   const secondary = brand?.secondary_color ?? "#000000";
+  const loginExperience = experience?.settings.login;
   return (
     <main className="grid min-h-screen bg-white lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-between" style={{ backgroundColor: secondary }}>
+      <section className="relative hidden overflow-hidden bg-cover bg-center p-12 text-white lg:flex lg:flex-col lg:justify-between" style={{ backgroundColor: secondary, backgroundImage: loginExperience?.image_url ? `linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.72)),url(${loginExperience.image_url})` : undefined }}>
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full border-[72px] opacity-80" style={{ borderColor: primary }} />
         <Link href={brand ? `/m/${brand.slug}` : "/"} className="relative z-10 w-fit">{brand?.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={210} height={48} className="max-h-12 w-auto object-contain brightness-0 invert" priority unoptimized /> : platformLogin ? <span className="text-2xl font-black uppercase tracking-[-0.05em]">Jobber<span style={{ color: primary }}>Train</span></span> : <span className="text-xl font-extrabold uppercase tracking-wide">Training Portal</span>}</Link>
         <div className="relative z-10 max-w-xl">
           <p className="text-sm font-extrabold uppercase italic tracking-[0.2em]" style={{ color: primary }}>{brand?.name ?? "Dealer"} learning center</p>
-          <h1 className="mt-4 text-5xl font-extrabold uppercase leading-[0.95] tracking-tight">{brand?.landing_headline ?? <>Know the product.<br /><span className="italic" style={{ color: primary }}>Sell with confidence.</span></>}</h1>
-          <p className="mt-6 max-w-lg text-lg leading-8 text-white/65">{brand?.landing_description ?? "Access product training, complete assigned quizzes, and keep your product knowledge current."}</p>
+          <h1 className="mt-4 text-5xl font-extrabold uppercase leading-[0.95] tracking-tight">{loginExperience?.headline || brand?.landing_headline || <>Know the product.<br /><span className="italic" style={{ color: primary }}>Sell with confidence.</span></>}</h1>
+          <p className="mt-6 max-w-lg text-lg leading-8 text-white/75">{loginExperience?.description || brand?.landing_description || "Access product training, complete assigned quizzes, and keep your product knowledge current."}</p>
         </div>
         <p className="relative z-10 text-sm text-white/40">{brand?.name ?? (platformLogin ? "JobberTrain Platform" : "Private Training Portal")}</p>
       </section>
