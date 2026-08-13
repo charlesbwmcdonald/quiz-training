@@ -33,7 +33,9 @@ export function ManufacturerHeader({ brand, email }: { brand: ManufacturerBrand;
           </div>
         </details>}
         {email && <span className="hidden max-w-48 truncate font-normal normal-case tracking-normal text-black/45 lg:block">{email}</span>}
-        <Link href="/logout" className="px-2 text-black/55 hover:text-black">Sign out</Link>
+        <form action="/logout" method="post">
+          <button type="submit" className="px-2 text-black/55 hover:text-black">Sign out</button>
+        </form>
       </nav>
     </div>
     <div className="h-1" style={{ backgroundColor: brand.primary_color }} />
