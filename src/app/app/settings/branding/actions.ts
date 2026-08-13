@@ -15,28 +15,8 @@ export async function updateBranding(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const primaryColor = String(formData.get("primaryColor") ?? "").trim();
   const secondaryColor = String(formData.get("secondaryColor") ?? "").trim();
-  const headline = String(formData.get("headline") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const heroOverlay = Math.min(90, Math.max(0, Number(formData.get("heroOverlay") ?? 55)));
-  const heroAlignment = formData.get("heroAlignment") === "center" ? "center" : "left";
-  const heroHeight = ["compact", "large", "full"].includes(String(formData.get("heroHeight"))) ? String(formData.get("heroHeight")) : "large";
-  const heroCtaText = String(formData.get("heroCtaText") ?? "Start training").trim();
-  const promoEnabled = formData.get("promoEnabled") === "on";
-  const promoText = String(formData.get("promoText") ?? "").trim();
-  const promoLinkUrl = String(formData.get("promoLinkUrl") ?? "").trim();
-  const promoLinkText = String(formData.get("promoLinkText") ?? "").trim();
-  const bannerLinkUrl = String(formData.get("bannerLinkUrl") ?? "").trim();
-  const customHtml = String(formData.get("customHtml") ?? "").trim();
   const loginHeadline = String(formData.get("loginHeadline") ?? "").trim();
   const loginDescription = String(formData.get("loginDescription") ?? "").trim();
-  const announcements = String(formData.get("announcements") ?? "").split("\n").map((line) => {
-    const [text, ...urlParts] = line.split("|");
-    return { text: text.trim(), url: urlParts.join("|").trim() };
-  }).filter((item) => item.text).slice(0, 8);
-  const carouselEnabled = formData.get("carouselEnabled") === "on";
-  const carouselAutoplay = formData.get("carouselAutoplay") === "on";
-  const featuredProductIds = formData.getAll("featuredProductIds").map(String).filter(Boolean).slice(0, 12);
-  const landingLayout = formData.get("landingLayout") === "masonry" ? "masonry" : "standard";
   const intent = formData.get("intent") === "publish" ? "publish" : "draft";
   let pageSections: LandingSection[] = [];
   try {
@@ -50,17 +30,11 @@ export async function updateBranding(formData: FormData) {
     fail("The landing-page layout could not be saved. Refresh and try again.");
   }
   const safeLink = (value:unknown) => !value || (typeof value === "string" && ((value.startsWith("/") && !value.startsWith("//")) || /^https:\/\//i.test(value)));
-  if (pageSections.some((section) => !safeLink(section.config.link_url) || !safeLink(section.config.image_url))) fail("Landing-page links must be secure https:// URLs or internal paths beginning with /.");
-  if (pageSections.some((section) => section.type === "announcement" && String(section.config.messages ?? "").split("\n").some((line) => { const link=line.split("|").slice(1).join("|").trim(); return !safeLink(link); }))) fail("Announcement links must be secure https:// URLs or internal paths beginning with /.");
   const logo = formData.get("logo");
-  const heroImage = formData.get("heroImage");
-  const bannerImage = formData.get("bannerImage");
   const loginImage = formData.get("loginImage");
   if (!manufacturerId || !name) fail("Manufacturer name is required.");
   if (!HEX.test(primaryColor) || !HEX.test(secondaryColor)) fail("Choose valid six-digit brand colors.");
-  if (headline.length > 140 || description.length > 500) fail("The landing-page text is too long.");
   if (loginHeadline.length > 120 || loginDescription.length > 400) fail("The sign-in text is too long.");
-  if (announcements.some((item) => item.url && !/^https?:\/\//i.test(item.url))) fail("Announcement links must start with http:// or https://.");
 
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -89,9 +63,15 @@ export async function updateBranding(formData: FormData) {
     if (error) fail(error.message);
     return supabase.storage.from("manufacturer-branding").getPublicUrl(path).data.publicUrl;
   };
-  const heroImageUrl = await uploadBrandImage(heroImage, "Hero image");
-  const bannerImageUrl = await uploadBrandImage(bannerImage, "Banner image");
   const loginImageUrl = await uploadBrandImage(loginImage, "Login image");
+
+  for (const section of pageSections) {
+    const image = formData.get(`sectionImage:${section.id}`);
+    const imageUrl = await uploadBrandImage(image, `${section.type}-${section.id}`);
+    if (imageUrl) section.config.image_url = imageUrl;
+  }
+  if (pageSections.some((section) => !safeLink(section.config.link_url) || !safeLink(section.config.image_url))) fail("Landing-page links must be secure https:// URLs or internal paths beginning with /.");
+  if (pageSections.some((section) => section.type === "announcement" && String(section.config.messages ?? "").split("\n").some((line) => { const link=line.split("|").slice(1).join("|").trim(); return !safeLink(link); }))) fail("Announcement links must be secure https:// URLs or internal paths beginning with /.");
 
   const landingExperience: LandingExperience = {
     ...existingExperience,
@@ -100,9 +80,6 @@ export async function updateBranding(formData: FormData) {
       description: loginDescription || "Sign in to continue your product training.",
       ...(loginImageUrl ? { image_url: loginImageUrl } : {}),
     },
-    announcements,
-    carousel: { enabled: carouselEnabled, autoplay: carouselAutoplay, product_ids: featuredProductIds },
-    layout: landingLayout,
     draft_sections: pageSections,
     ...(intent === "publish" ? { published_sections: pageSections, published_at: new Date().toISOString() } : {}),
   };
@@ -116,23 +93,9 @@ export async function updateBranding(formData: FormData) {
     name,
     primary_color: primaryColor.toUpperCase(),
     secondary_color: secondaryColor.toUpperCase(),
-    landing_headline: headline,
-    landing_description: description,
-    hero_overlay: heroOverlay,
-    hero_alignment: heroAlignment,
-    hero_height: heroHeight,
-    hero_cta_text: heroCtaText || "Start training",
-    promo_enabled: promoEnabled,
-    promo_text: promoText,
-    promo_link_url: promoLinkUrl,
-    promo_link_text: promoLinkText,
-    banner_link_url: bannerLinkUrl,
-    custom_html: customHtml,
     landing_experience: landingExperience,
   };
   if (logoUrl) updates.logo_url = logoUrl;
-  if (heroImageUrl) updates.hero_image_url = heroImageUrl;
-  if (bannerImageUrl) updates.banner_image_url = bannerImageUrl;
   const { error } = await supabase.from("manufacturers").update(updates).eq("id", manufacturerId);
   if (error) fail(error.message);
   revalidatePath(`/m/${slug}`);
