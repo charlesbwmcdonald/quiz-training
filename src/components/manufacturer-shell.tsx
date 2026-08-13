@@ -4,11 +4,10 @@ import type { ManufacturerBrand } from "@/lib/branding";
 
 export function ManufacturerHeader({ brand, email }: { brand: ManufacturerBrand; email?: string | null }) {
   const portal = `/m/${brand.slug}/app`;
-  const landingPage = `/m/${brand.slug}`;
   const menuLink = "block min-w-48 px-4 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-black hover:bg-black/5";
   return <header className="border-b border-black/10 bg-white">
     <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
-      <Link href={landingPage} prefetch={false} aria-label={`${brand.name} landing page`} className="flex min-w-0 items-center gap-4">
+      <Link href={portal} prefetch={false} aria-label={`${brand.name} training dashboard`} className="flex min-w-0 items-center gap-4">
         {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={170} height={40} className="max-h-10 w-auto object-contain" priority unoptimized /> : <span className="truncate text-xl font-black uppercase">{brand.name}</span>}
         <span className="hidden border-l border-black/15 pl-4 text-xs font-extrabold uppercase tracking-[0.16em] text-black/45 md:block">Training Center</span>
       </Link>

@@ -39,8 +39,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data } = await supabase.auth.getUser();
-  const isAuthed = !!data.user;
+  // Validate and refresh the session before making any route decisions.
+  // This avoids intermittent sign-outs when an access token expires between navigations.
+  const { data } = await supabase.auth.getClaims();
+  const isAuthed = Boolean(data?.claims?.sub);
 
   const pathname = request.nextUrl.pathname;
   const scopedMatch = pathname.match(/^\/m\/([^/]+)\/app(?:\/.*)?$/);
