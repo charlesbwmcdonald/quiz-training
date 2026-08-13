@@ -1,20 +1,52 @@
+import Link from "next/link";
+import { ManufacturerHeader } from "@/components/manufacturer-shell";
+import type { ManufacturerBrand } from "@/lib/branding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import QuizCardActions from "./quiz-card-actions";
 
-export default async function AppPage() {
+type Quiz = { id: string; title: string; description: string | null; status: "draft" | "published" | "archived"; passing_score: number; created_at: string; quiz_questions: { count: number }[] };
+type Training = { company_id: string; company_name: string; quiz_id: string; quiz_title: string; quiz_description: string | null; passing_score: number; is_required: boolean; due_at: string | null; attempt_status: string | null; latest_score: number | null };
+type LearnerCourse = { company_id: string; company_name: string; course_id: string; course_title: string; course_description: string | null; is_required: boolean; due_at: string | null; block_count: number; completed_block_count: number };
+
+export default async function AppPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const params = await searchParams;
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
+  const { data: authData } = await supabase.auth.getUser();
+  const { data: brandData } = await supabase.rpc("get_active_manufacturer_brand");
+  const brand = (brandData?.[0] ?? null) as ManufacturerBrand | null;
+  const primary = brand?.primary_color ?? "#D90000";
+  const isManager = Boolean(brand?.can_manage_training);
+  const [{ data, error }, { data: attemptCounts }, { data: courseData }, { data: internalQuizRows }] = await Promise.all([
+    isManager ? supabase.from("quizzes").select("id,title,description,status,passing_score,created_at,quiz_questions(count)").order("created_at", { ascending: false }) : supabase.rpc("learner_training_dashboard"),
+    isManager ? supabase.rpc("managed_quiz_attempt_counts") : Promise.resolve({ data: [] }),
+    isManager ? Promise.resolve({ data: [] }) : supabase.rpc("learner_courses"),
+    isManager ? supabase.rpc("internal_assigned_quiz_ids") : Promise.resolve({ data: [] }),
+  ]);
+  const quizzes = isManager ? (data ?? []) as Quiz[] : [];
+  const training = !isManager ? (data ?? []) as Training[] : [];
+  const learnerCourses = !isManager ? (courseData ?? []) as LearnerCourse[] : [];
+  const attemptsByQuiz = new Map<string, number>((attemptCounts ?? []).map((item: { quiz_id: string; attempt_count: number }) => [item.quiz_id, Number(item.attempt_count)]));
+  const internalQuizIds = new Set<string>((internalQuizRows ?? []).map((item: { quiz_id: string }) => item.quiz_id));
 
-  return (
-    <main style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>
-        App (Protected)
-      </h1>
-      <p>
-        Logged in as: <b>{data.user?.email}</b>
-      </p>
-      <p style={{ marginTop: 12 }}>
-        <a href="/logout">Logout</a>
-      </p>
+  return <div className="min-h-screen bg-[#f4f4f2] text-black">
+    {brand && <ManufacturerHeader brand={brand} email={authData.user?.email} />}
+    <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
+      {params.error && <div role="alert" className="mb-6 border-l-4 bg-red-50 p-4 font-semibold text-red-900" style={{ borderColor: primary }}>{params.error}</div>}
+      <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+        <div><p className="text-sm font-extrabold uppercase italic tracking-[0.2em]" style={{ color: primary }}>{brand?.name ?? "Product"} training</p><h1 className="mt-2 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">{isManager ? "Quiz Library" : "My Training"}</h1><p className="mt-3 max-w-2xl text-black/60">{isManager ? "Create product-training quizzes, prepare questions, and publish them when they are ready for your dealer network." : "Complete assigned product training and keep your knowledge current."}</p></div>
+        {isManager && <div className="flex flex-wrap gap-3"><Link href={`/m/${brand?.slug}/app/quizzes/import`} className="inline-flex min-h-12 items-center justify-center border-2 border-black px-5 font-extrabold uppercase tracking-wide transition hover:bg-black hover:text-white">Import CSV</Link><Link href={`/m/${brand?.slug}/app/quizzes/new`} className="inline-flex min-h-12 items-center justify-center px-6 font-extrabold uppercase tracking-wide text-white transition hover:brightness-90" style={{ backgroundColor: primary }}>+ Create quiz</Link></div>}
+      </div>
+
+      {!isManager ? (
+        training.length === 0 && learnerCourses.length === 0 ? <section className="mt-10 grid min-h-72 place-items-center border-2 border-dashed border-black/15 bg-white p-8 text-center"><div><h2 className="text-2xl font-extrabold uppercase">You&apos;re all caught up</h2><p className="mt-2 text-black/55">No training has been assigned to your retailer yet.</p></div></section> :
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{learnerCourses.map(item => { const complete = Number(item.completed_block_count) >= Number(item.block_count) && Number(item.block_count) > 0; return <article key={`${item.company_id}-${item.course_id}`} className="border border-black/10 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><span className={item.is_required ? "bg-red-100 px-3 py-1 text-xs font-extrabold uppercase text-red-800" : "bg-black/5 px-3 py-1 text-xs font-extrabold uppercase text-black/55"}>{item.is_required ? "Required course" : "Course"}</span><span className="text-xs font-bold text-black/45">{item.company_name}</span></div><h2 className="mt-5 text-xl font-extrabold uppercase">{item.course_title}</h2><p className="mt-3 min-h-12 text-sm leading-6 text-black/60">{item.course_description || "Product learning course."}</p><div className="mt-6 border-t border-black/10 pt-4 text-sm"><b>{item.completed_block_count} of {item.block_count} complete</b><p className="mt-1 text-black/50">{item.due_at ? `Due ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(item.due_at))}` : "No due date"}</p></div><Link href={`/m/${brand?.slug}/app/learning/${item.company_id}/${item.course_id}`} className="mt-5 flex min-h-11 items-center justify-center px-4 text-center text-xs font-extrabold uppercase text-white transition hover:brightness-90" style={{ backgroundColor: primary }}>{complete ? "Review course" : item.completed_block_count ? "Continue course" : "Start course"}</Link></article>})}{training.map(item => <article key={`${item.company_id}-${item.quiz_id}`} className="border border-black/10 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><span className={item.is_required ? "bg-red-100 px-3 py-1 text-xs font-extrabold uppercase text-red-800" : "bg-black/5 px-3 py-1 text-xs font-extrabold uppercase text-black/55"}>{item.is_required ? "Required quiz" : "Quiz"}</span><span className="text-xs font-bold text-black/45">{item.company_name}</span></div><h2 className="mt-5 text-xl font-extrabold uppercase">{item.quiz_title}</h2><p className="mt-3 min-h-12 text-sm leading-6 text-black/60">{item.quiz_description || "Product knowledge training."}</p><div className="mt-6 border-t border-black/10 pt-4 text-sm"><b>{item.passing_score}% to pass</b><p className="mt-1 text-black/50">{item.due_at ? `Due ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(item.due_at))}` : "No due date"}</p>{item.attempt_status && <p className="mt-2 font-bold uppercase" style={{ color: primary }}>{item.attempt_status}{item.latest_score !== null ? ` · ${item.latest_score}%` : ""}</p>}</div><Link href={`/m/${brand?.slug}/app/training/${item.company_id}/${item.quiz_id}`} className="mt-5 flex min-h-11 items-center justify-center px-4 text-center text-xs font-extrabold uppercase text-white transition hover:brightness-90" style={{ backgroundColor: primary }}>{item.attempt_status === "in_progress" ? "Continue quiz" : item.attempt_status === "completed" ? "Take again" : "Start quiz"}</Link></article>)}</div>
+      ) : error ? (
+        <section className="mt-10 border-l-4 bg-white p-6 shadow-sm" style={{ borderColor: primary }}><h2 className="text-lg font-extrabold uppercase">Connect the quiz database</h2><p className="mt-2 text-black/65">The app is ready, but the quiz tables have not been added to Supabase yet.</p></section>
+      ) : quizzes.length === 0 ? (
+        <section className="mt-10 grid min-h-80 place-items-center border-2 border-dashed border-black/15 bg-white p-8 text-center"><div className="max-w-md"><div className="mx-auto grid h-14 w-14 place-items-center bg-black text-xl font-extrabold text-white">?</div><h2 className="mt-5 text-2xl font-extrabold uppercase">Build your first quiz</h2><p className="mt-2 text-black/60">Add a title, passing score, questions, and answer choices. New quizzes remain drafts until you publish them.</p><Link href="/app/quizzes/new" className="mt-6 inline-flex min-h-12 items-center bg-black px-6 font-bold uppercase tracking-wide text-white hover:bg-[#d90000]">Create first quiz</Link></div></section>
+      ) : (
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{quizzes.map(quiz => <article key={quiz.id} className="border border-black/10 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-4"><span className={quiz.status === "published" ? "bg-green-100 px-3 py-1 text-xs font-extrabold uppercase text-green-800" : quiz.status === "archived" ? "bg-amber-100 px-3 py-1 text-xs font-extrabold uppercase text-amber-900" : "bg-black/5 px-3 py-1 text-xs font-extrabold uppercase text-black/60"}>{quiz.status}</span><span className="text-sm font-bold text-black/45">{quiz.quiz_questions?.[0]?.count ?? 0} questions</span></div><h2 className="mt-5 text-xl font-extrabold uppercase leading-tight">{quiz.title}</h2><p className="mt-3 line-clamp-2 min-h-12 text-sm leading-6 text-black/60">{quiz.description || "No description added."}</p><div className="mt-6 flex items-center justify-between border-t border-black/10 pt-4 text-sm"><span><b>{quiz.passing_score}%</b> to pass</span>{attemptsByQuiz.get(quiz.id) ? <span className="text-black/45">{attemptsByQuiz.get(quiz.id)} attempts</span> : <Link href={`/m/${brand!.slug}/app/quizzes/${quiz.id}/edit`} className="font-bold hover:underline" style={{ color: primary }}>Edit quiz</Link>}</div><QuizCardActions quizId={quiz.id} status={quiz.status} hasAttempts={Boolean(attemptsByQuiz.get(quiz.id))} brandSlug={brand!.slug} assignedInternally={internalQuizIds.has(quiz.id)} /></article>)}</div>
+      )}
     </main>
-  );
+  </div>;
 }
