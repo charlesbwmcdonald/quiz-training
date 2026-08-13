@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({ request });
+  let response = NextResponse.next({ request });
+
+  const redirectWithSession = (url: URL) => {
+    const redirectResponse = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+    return redirectResponse;
+  };
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +19,10 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
           });
@@ -32,7 +42,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    return redirectWithSession(url);
   }
 
   if (isAuthed && isManufacturerPortal) {
@@ -42,7 +52,7 @@ export async function middleware(request: NextRequest) {
     if (activeSlug && pathname.startsWith("/app")) {
       const url = request.nextUrl.clone();
       url.pathname = `/m/${activeSlug}${pathname}`;
-      return NextResponse.redirect(url);
+      return redirectWithSession(url);
     }
 
     if (activeSlug && scopedMatch) {
@@ -50,7 +60,7 @@ export async function middleware(request: NextRequest) {
       if (requestedSlug !== activeSlug) {
         const url = request.nextUrl.clone();
         url.pathname = pathname.replace(`/m/${requestedSlug}/app`, `/m/${activeSlug}/app`);
-        return NextResponse.redirect(url);
+        return redirectWithSession(url);
       }
       return response;
     }
@@ -65,7 +75,7 @@ export async function middleware(request: NextRequest) {
     const { data: destination } = !requestedBrand && (!requestedNext || requestedNext === "/app") ? await supabase.rpc("get_post_login_destination") : { data: null };
     url.pathname = typeof destination === "string" && destination.startsWith("/") && !destination.startsWith("//") ? destination : requestedNext?.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : activeSlug ? `/m/${activeSlug}/app` : "/app";
     url.search = "";
-    return NextResponse.redirect(url);
+    return redirectWithSession(url);
   }
 
   return response;
