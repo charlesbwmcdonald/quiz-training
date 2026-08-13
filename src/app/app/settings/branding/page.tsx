@@ -4,9 +4,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { LandingExperience } from "@/lib/branding";
 import { updateBranding } from "./actions";
 import BrandColorField from "./brand-color-field";
+import PageBuilder from "@/components/page-builder";
+import type { LandingSection } from "@/lib/branding";
 
 type Brand = { id:string; name:string; slug:string; logo_url:string|null; primary_color:string; secondary_color:string; landing_headline:string|null; landing_description:string|null; hero_image_url:string|null; hero_overlay:number; hero_alignment:string; hero_height:string; hero_cta_text:string; promo_enabled:boolean; promo_text:string|null; promo_link_url:string|null; promo_link_text:string|null; banner_image_url:string|null; banner_link_url:string|null; custom_html:string|null; landing_experience:LandingExperience };
-type Product = { product_id:string; name:string; status:string };
+type Product = { product_id:string; name:string; status:string; category_name:string|null };
 const input = "min-h-12 border border-black/20 px-4 font-normal outline-none focus:border-black";
 const area = "border border-black/20 p-4 font-normal outline-none focus:border-black";
 
@@ -24,9 +26,15 @@ export default async function BrandingSettingsPage({ searchParams }: { searchPar
   const brand = data as Brand | null;
   if (!brand) redirect("/app");
   const experience = brand.landing_experience ?? {};
-  const selectedProducts = new Set(experience.carousel?.product_ids ?? []);
   const products = ((productRows ?? []) as Product[]).filter((product) => product.status === "published");
+  const selectedProducts = new Set(experience.carousel?.product_ids ?? []);
   const announcementText = (experience.announcements ?? []).map((item) => `${item.text}${item.url ? ` | ${item.url}` : ""}`).join("\n");
+  const defaultSections: LandingSection[] = [
+    { id:"announcement-default", type:"announcement", enabled:Boolean(brand.promo_enabled), config:{ messages:(experience.announcements ?? []).map((item)=>`${item.text}${item.url?` | ${item.url}`:""}`).join("\n") || brand.promo_text || "New training is now available" } },
+    { id:"hero-default", type:"hero", enabled:true, config:{ headline:brand.landing_headline ?? "Product knowledge that drives sales.", description:brand.landing_description ?? "Learn the products and build customer confidence.", button_text:brand.hero_cta_text || "Start training" } },
+    { id:"benefits-default", type:"benefits", enabled:true, config:{ title:"Build product confidence" } },
+  ];
+  const builderSections = experience.draft_sections?.length ? experience.draft_sections : experience.published_sections?.length ? experience.published_sections : defaultSections;
 
   return <main className="min-h-screen bg-[#f4f4f2] px-5 py-10"><div className="mx-auto max-w-6xl">
     <div className="flex flex-wrap justify-between gap-4"><Link href={`/m/${brand.slug}/app`} className="text-sm font-bold uppercase text-black/55">← Training center</Link><Link href={`/m/${brand.slug}`} target="_blank" className="text-sm font-extrabold uppercase" style={{ color: brand.primary_color }}>View landing page ↗</Link></div>
@@ -37,6 +45,10 @@ export default async function BrandingSettingsPage({ searchParams }: { searchPar
 
       <section className="border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-black/40">02 · Sign in</p><h2 className="mt-2 text-2xl font-extrabold uppercase">Branded sign-in experience</h2><p className="mt-2 text-sm text-black/55">Displayed when learners sign in through this manufacturer’s landing page.</p><div className="mt-6 grid gap-5"><label className="grid gap-2 font-bold">Sign-in background image<input name="loginImage" type="file" accept="image/png,image/jpeg,image/webp" className="min-h-12 border p-3 font-normal"/></label><label className="grid gap-2 font-bold">Welcome headline<input name="loginHeadline" maxLength={120} defaultValue={experience.login?.headline ?? "Welcome to your training center"} className={input}/></label><label className="grid gap-2 font-bold">Welcome message<textarea name="loginDescription" maxLength={400} rows={3} defaultValue={experience.login?.description ?? "Sign in to continue your product training."} className={area}/></label></div></section>
 
+      <PageBuilder initialSections={builderSections} products={products} primary={brand.primary_color}/>
+
+      <details className="border border-black/10 bg-white"><summary className="cursor-pointer px-6 py-5 font-extrabold uppercase sm:px-8">Legacy design and advanced controls</summary><div className="grid gap-6 border-t border-black/10 p-6 sm:p-8">
+
       <section className="border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-black/40">03 · Hero</p><h2 className="mt-2 text-2xl font-extrabold uppercase">Landing-page hero</h2><div className="mt-6 grid gap-5"><label className="grid gap-2 font-bold">Hero background image<input name="heroImage" type="file" accept="image/png,image/jpeg,image/webp" className="min-h-12 border p-3 font-normal"/></label><label className="grid gap-2 font-bold">Headline<textarea name="headline" maxLength={140} rows={2} defaultValue={brand.landing_headline ?? ""} className={area}/></label><label className="grid gap-2 font-bold">Introduction<textarea name="description" maxLength={500} rows={4} defaultValue={brand.landing_description ?? ""} className={area}/></label><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"><label className="grid gap-2 font-bold">Button text<input name="heroCtaText" defaultValue={brand.hero_cta_text} className={input}/></label><label className="grid gap-2 font-bold">Text alignment<select name="heroAlignment" defaultValue={brand.hero_alignment} className={input}><option value="left">Left</option><option value="center">Centered</option></select></label><label className="grid gap-2 font-bold">Banner height<select name="heroHeight" defaultValue={brand.hero_height} className={input}><option value="compact">Compact</option><option value="large">Large</option><option value="full">Full screen</option></select></label><label className="grid gap-2 font-bold">Image overlay · {brand.hero_overlay}%<input name="heroOverlay" type="range" min="0" max="90" defaultValue={brand.hero_overlay} className="min-h-12"/></label></div></div></section>
 
       <section className="border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-black/40">04 · Announcement</p><h2 className="mt-2 text-2xl font-extrabold uppercase">Rotating pencil banner</h2><p className="mt-2 text-sm leading-6 text-black/55">Enter one announcement per line. Add an optional link after a vertical bar: <span className="font-mono">New course available | https://example.com</span></p><div className="mt-6 grid gap-5"><label className="flex items-center gap-3 font-bold"><input name="promoEnabled" type="checkbox" defaultChecked={brand.promo_enabled}/> Show announcement bar</label><textarea name="announcements" rows={6} defaultValue={announcementText || brand.promo_text || ""} placeholder="New product training is now available\nComplete certification by September 30 | https://example.com" className={area}/><div className="border-t border-black/10 pt-5"><label className="grid gap-2 font-bold">Full-width custom banner image<input name="bannerImage" type="file" accept="image/png,image/jpeg,image/webp" className="min-h-12 border p-3 font-normal"/></label><label className="mt-4 grid gap-2 font-bold">Banner destination URL<input name="bannerLinkUrl" type="url" defaultValue={brand.banner_link_url ?? ""} className={input}/></label></div></div></section>
@@ -46,7 +58,8 @@ export default async function BrandingSettingsPage({ searchParams }: { searchPar
       <section className="border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-black/40">06 · Layout</p><h2 className="mt-2 text-2xl font-extrabold uppercase">Landing-page composition</h2><div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="border-2 p-5 font-bold has-[:checked]:border-black"><input name="landingLayout" type="radio" value="standard" defaultChecked={experience.layout !== "masonry"} className="mr-3"/>Standard sections<span className="mt-2 block text-sm font-normal text-black/50">Clean, full-width horizontal sections.</span></label><label className="border-2 p-5 font-bold has-[:checked]:border-black"><input name="landingLayout" type="radio" value="masonry" defaultChecked={experience.layout === "masonry"} className="mr-3"/>Masonry showcase<span className="mt-2 block text-sm font-normal text-black/50">Editorial tiles with varied sizes and stronger visual rhythm.</span></label></div></section>
 
       <section className="border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-black/40">07 · Advanced</p><h2 className="mt-2 text-2xl font-extrabold uppercase">Custom HTML section</h2><p className="mt-2 text-sm leading-6 text-black/55">HTML is displayed inside an isolated, script-free frame and cannot access user sessions.</p><textarea name="customHtml" rows={14} defaultValue={brand.custom_html ?? ""} placeholder={'<section style="padding: 40px;">\n  <h2>Featured Products</h2>\n</section>'} className={`${area} mt-5 w-full font-mono text-sm`}/></section>
-      <div className="sticky bottom-4 flex justify-end"><button className="min-h-14 px-8 font-extrabold uppercase text-white shadow-xl" style={{ backgroundColor: brand.primary_color }}>Save & publish brand</button></div>
+      </div></details>
+      <div className="sticky bottom-4 flex flex-wrap justify-end gap-3"><button name="intent" value="draft" className="min-h-14 border-2 border-black bg-white px-8 font-extrabold uppercase text-black shadow-xl">Save draft</button><button name="intent" value="publish" className="min-h-14 px-8 font-extrabold uppercase text-white shadow-xl" style={{ backgroundColor: brand.primary_color }}>Publish landing page</button></div>
     </form>
   </div></main>;
 }

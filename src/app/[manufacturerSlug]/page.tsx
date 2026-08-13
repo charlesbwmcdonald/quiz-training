@@ -3,17 +3,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicBrand, getPublicLandingExperience } from "@/lib/branding";
 import { AnnouncementBar, ProductCarousel } from "@/components/landing-experience";
+import LandingPageSections from "@/components/landing-page-sections";
 
 export default async function ManufacturerLandingPage({ params }: { params: Promise<{ manufacturerSlug: string }> }) {
   const { manufacturerSlug } = await params;
   const [brand, experience] = await Promise.all([getPublicBrand(manufacturerSlug), getPublicLandingExperience(manufacturerSlug)]);
   if (!brand) notFound();
   const settings = experience?.settings ?? {};
+  const publishedSections = settings.published_sections;
   const announcements = settings.announcements?.length ? settings.announcements : brand.promo_enabled && brand.promo_text ? [{ text: brand.promo_text, url: brand.promo_link_url ?? undefined }] : [];
 
   return (
     <main className="min-h-screen bg-white text-black">
-      {brand.promo_enabled && <AnnouncementBar announcements={announcements} color={brand.primary_color} />}
+      {!publishedSections?.length && brand.promo_enabled && <AnnouncementBar announcements={announcements} color={brand.primary_color} />}
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
           <Link href={`/m/${brand.slug}`} className="flex items-center gap-4">
@@ -23,6 +25,8 @@ export default async function ManufacturerLandingPage({ params }: { params: Prom
           <Link href={`/login?brand=${encodeURIComponent(brand.slug)}`} className="px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-white transition hover:opacity-85" style={{ backgroundColor: brand.primary_color }}>Sign in</Link>
         </div>
       </header>
+
+      {publishedSections?.length ? <LandingPageSections sections={publishedSections} brand={brand} products={experience?.products ?? []}/> : <>
 
       <section className={`relative isolate overflow-hidden px-5 text-white lg:px-8 ${brand.hero_height === "compact" ? "py-16 lg:py-20" : brand.hero_height === "full" ? "flex min-h-[calc(100vh-92px)] items-center py-24" : "py-24 lg:py-32"}`} style={{ backgroundColor: brand.secondary_color }}>
         {brand.hero_image_url ? <><Image src={brand.hero_image_url} alt="" fill className="-z-20 object-cover" priority unoptimized/><div className="absolute inset-0 -z-10 bg-black" style={{opacity:(brand.hero_overlay??55)/100}}/></> : <><div className="absolute -right-32 -top-44 -z-10 h-[34rem] w-[34rem] rounded-full border-[90px] opacity-70" style={{ borderColor: brand.primary_color }} /><div className="absolute -bottom-40 -left-36 -z-10 h-96 w-96 rounded-full border-[72px] border-white/10" /></>}
@@ -51,6 +55,7 @@ export default async function ManufacturerLandingPage({ params }: { params: Prom
         </div>
       </section>
       {brand.custom_html && <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8"><iframe title={`${brand.name} custom content`} sandbox="" srcDoc={brand.custom_html} className="min-h-[520px] w-full border-0 bg-white"/></section>}
+      </>}
     </main>
   );
 }

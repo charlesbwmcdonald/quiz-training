@@ -31,11 +31,16 @@ export type LandingExperience = {
   announcements?: { text: string; url?: string }[];
   carousel?: { enabled?: boolean; autoplay?: boolean; product_ids?: string[] };
   layout?: "standard" | "masonry";
+  draft_sections?: LandingSection[];
+  published_sections?: LandingSection[];
+  published_at?: string;
 };
+
+export type LandingSection = { id:string; type:"announcement"|"hero"|"carousel"|"benefits"|"banner"|"cta"; enabled:boolean; config:Record<string, string|string[]|boolean> };
 
 export type PublicLandingExperience = {
   settings: LandingExperience;
-  products: { id: string; name: string; slug: string; tagline: string | null; image: string | null }[];
+  products: { id: string; name: string; slug: string; tagline: string | null; image: string | null; category_id?: string|null; category_name?: string|null }[];
 };
 
 export async function getPublicBrand(slug?: string | null) {
