@@ -4,10 +4,17 @@ import { createServerClient } from "@supabase/ssr";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  const preventSessionCaching = (target: NextResponse) => {
+    target.headers.set("Cache-Control", "private, no-store, max-age=0");
+    target.headers.set("Pragma", "no-cache");
+    target.headers.set("Expires", "0");
+    return target;
+  };
+
   const redirectWithSession = (url: URL) => {
     const redirectResponse = NextResponse.redirect(url);
     response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
-    return redirectResponse;
+    return preventSessionCaching(redirectResponse);
   };
 
   const supabase = createServerClient(
@@ -23,6 +30,7 @@ export async function middleware(request: NextRequest) {
             request.cookies.set(name, value);
           });
           response = NextResponse.next({ request });
+          preventSessionCaching(response);
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
           });
@@ -78,7 +86,7 @@ export async function middleware(request: NextRequest) {
     return redirectWithSession(url);
   }
 
-  return response;
+  return preventSessionCaching(response);
 }
 
 export const config = {
