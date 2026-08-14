@@ -8,5 +8,5 @@ export default function CopyInviteLink({ token }: { token: string }) {
     await navigator.clipboard.writeText(`${window.location.origin}/invite/${token}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
-  }} className="font-bold text-[#d90000] hover:underline">{copied ? "Copied!" : "Copy link"}</button>;
+  }} className="font-bold text-[#d93a10] hover:underline">{copied ? "Copied!" : "Copy link"}</button>;
 }
