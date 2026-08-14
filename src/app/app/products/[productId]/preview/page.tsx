@@ -29,7 +29,7 @@ export default async function ProductPreview({ params }: { params: Promise<{ pro
     <ManufacturerHeader brand={brand} email={auth.user.email} />
     <aside className="border-b border-amber-300 bg-amber-50 px-5 py-3">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 text-sm">
-        <p><b className="uppercase">Preview mode</b> <span className="text-black/55">— this page is visible only to signed-in team members.</span></p>
+        <p><b className="uppercase">Preview mode</b> <span className="text-black/55"> - this page is visible only to signed-in team members.</span></p>
         <div className="flex gap-4 font-bold uppercase">
           <Link href={`/m/${brand.slug}/app/products/${product.id}/edit`}>Edit product</Link>
           <Link href={`/m/${brand.slug}/app/products`}>Back to library</Link>
