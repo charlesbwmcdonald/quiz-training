@@ -1,2 +1,31 @@
-import Image from "next/image";import Link from "next/link";import {notFound} from "next/navigation";import {createSupabaseServerClient} from "@/lib/supabase/server";import {ImageLightbox} from "@/components/image-lightbox";type Product={name:string;tagline:string|null;description:string|null;model_sku:string|null;category_name:string|null;manufacturer_name:string;manufacturer_slug:string;primary_color:string;logo_url:string|null;images:{url:string;caption?:string}[];features:string[];specs:{label:string;value:string}[];compatibility:string|null;videos:{url:string}[];downloads:{url:string}[];product_url:string|null};
-export default async function PublicProduct({params}:{params:Promise<{manufacturerSlug:string;productSlug:string}>}){const {manufacturerSlug,productSlug}=await params;const supabase=await createSupabaseServerClient();const {data}=await supabase.rpc("get_public_product",{manufacturer_slug:manufacturerSlug,product_slug:productSlug});if(!data)notFound();const p=data as Product;return <main className="min-h-screen bg-white"><header className="border-b"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">{p.logo_url?<Image src={p.logo_url} alt={p.manufacturer_name} width={180} height={48} className="max-h-12 w-auto" unoptimized/>:<b className="uppercase">{p.manufacturer_name}</b>}<Link href={`/m/${p.manufacturer_slug}`} className="text-sm font-bold uppercase">Training center</Link></div></header><section className="bg-[#f4f4f2] px-5 py-16"><div className="mx-auto max-w-7xl"><p className="text-sm font-extrabold uppercase tracking-[.2em]" style={{color:p.primary_color}}>{p.category_name||"Product"}</p><h1 className="mt-3 text-5xl font-extrabold uppercase sm:text-6xl">{p.name}</h1>{p.tagline&&<p className="mt-4 max-w-3xl text-xl text-black/60">{p.tagline}</p>}</div></section><div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 lg:grid-cols-[1.05fr_.95fr]"><div><ImageLightbox images={p.images??[]} alt={p.name} className="grid grid-cols-2 gap-3 [&_button:first-child]:col-span-2 [&_button]:aspect-[4/3]"/>{p.videos?.length>0&&<div className="mt-8"><h2 className="text-2xl font-extrabold uppercase">Videos</h2><div className="mt-4 grid gap-3">{p.videos.map((v,i)=><a key={v.url} href={v.url} target="_blank" rel="noreferrer" className="border-2 border-black p-4 font-bold uppercase">Watch video {i+1} ↗</a>)}</div></div>}</div><div><h2 className="text-2xl font-extrabold uppercase">Product overview</h2><p className="mt-4 whitespace-pre-wrap leading-8 text-black/70">{p.description}</p>{p.features?.length>0&&<div className="mt-8 border-l-4 bg-black/5 p-6" style={{borderColor:p.primary_color}}><h2 className="font-extrabold uppercase">Key selling points</h2><ul className="mt-4 list-disc space-y-2 pl-5">{p.features.map(x=><li key={x}>{x}</li>)}</ul></div>}{p.specs?.length>0&&<div className="mt-8"><h2 className="font-extrabold uppercase">Specifications</h2><dl className="mt-3 divide-y border-y">{p.specs.map(s=><div key={`${s.label}-${s.value}`} className="grid grid-cols-2 gap-4 py-3"><dt className="font-bold">{s.label}</dt><dd>{s.value}</dd></div>)}</dl></div>}{p.compatibility&&<div className="mt-8"><h2 className="font-extrabold uppercase">Compatibility & fitment</h2><p className="mt-3 whitespace-pre-wrap text-black/70">{p.compatibility}</p></div>}<div className="mt-8 flex flex-wrap gap-3">{p.product_url&&<a href={p.product_url} target="_blank" rel="noreferrer" className="px-5 py-4 font-extrabold uppercase text-white" style={{backgroundColor:p.primary_color}}>Official product page ↗</a>}{p.downloads?.map((d,i)=><a key={d.url} href={d.url} target="_blank" rel="noreferrer" className="border-2 border-black px-5 py-4 font-extrabold uppercase">Download {i+1} ↗</a>)}</div></div></div></main>}
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProductVariationViewer, type ProductDetail } from "@/components/product-variation-viewer";
+
+type Product = ProductDetail & {
+  manufacturer_name: string;
+  manufacturer_slug: string;
+  primary_color: string;
+  logo_url: string | null;
+  variations: ProductDetail[];
+};
+
+export default async function PublicProduct({ params }: { params: Promise<{ manufacturerSlug: string; productSlug: string }> }) {
+  const { manufacturerSlug, productSlug } = await params;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("get_public_product_v2", { manufacturer_slug: manufacturerSlug, product_slug: productSlug });
+  if (!data) notFound();
+  const product = data as Product;
+
+  return <main className="min-h-screen bg-white">
+    <header className="border-b">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
+        {product.logo_url ? <Image src={product.logo_url} alt={product.manufacturer_name} width={180} height={48} className="max-h-12 w-auto" unoptimized /> : <b className="uppercase">{product.manufacturer_name}</b>}
+        <Link href={`/m/${product.manufacturer_slug}`} className="text-sm font-bold uppercase">Training center</Link>
+      </div>
+    </header>
+    <ProductVariationViewer parent={product} variations={product.variations ?? []} primary={product.primary_color} />
+  </main>;
+}

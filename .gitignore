@@ -35,6 +35,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local database backups (may contain private application data)
+/.backups/
+
 # vercel
 .vercel
 

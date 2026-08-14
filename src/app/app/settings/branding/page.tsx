@@ -8,7 +8,7 @@ import PageBuilder from "@/components/page-builder";
 import type { LandingSection } from "@/lib/branding";
 
 type Brand = { id:string; name:string; slug:string; logo_url:string|null; primary_color:string; secondary_color:string; landing_headline:string|null; landing_description:string|null; hero_image_url:string|null; hero_overlay:number; hero_alignment:string; hero_height:string; hero_cta_text:string; promo_enabled:boolean; promo_text:string|null; landing_experience:LandingExperience };
-type Product = { product_id:string; name:string; status:string; category_name:string|null };
+type Product = { product_id:string; name:string; status:string; category_name:string|null; parent_product_id:string|null };
 const input = "min-h-12 border border-black/20 px-4 font-normal outline-none focus:border-black";
 const area = "border border-black/20 p-4 font-normal outline-none focus:border-black";
 
@@ -21,12 +21,12 @@ export default async function BrandingSettingsPage({ searchParams }: { searchPar
   if (!profile?.active_manufacturer_id) redirect("/app");
   const [{ data }, { data: productRows }] = await Promise.all([
     supabase.from("manufacturers").select("id,name,slug,logo_url,primary_color,secondary_color,landing_headline,landing_description,hero_image_url,hero_overlay,hero_alignment,hero_height,hero_cta_text,promo_enabled,promo_text,landing_experience").eq("id", profile.active_manufacturer_id).single(),
-    supabase.rpc("manufacturer_products"),
+    supabase.rpc("manufacturer_products_v2"),
   ]);
   const brand = data as Brand | null;
   if (!brand) redirect("/app");
   const experience = brand.landing_experience ?? {};
-  const products = ((productRows ?? []) as Product[]).filter((product) => product.status === "published");
+  const products = ((productRows ?? []) as Product[]).filter((product) => product.status === "published" && !product.parent_product_id);
   const defaultSections: LandingSection[] = [
     { id:"announcement-default", type:"announcement", enabled:Boolean(brand.promo_enabled), config:{ messages:(experience.announcements ?? []).map((item)=>`${item.text}${item.url?` | ${item.url}`:""}`).join("\n") || brand.promo_text || "New training is now available" } },
     { id:"hero-default", type:"hero", enabled:true, config:{ headline:brand.landing_headline ?? "Product knowledge that drives sales.", description:brand.landing_description ?? "Learn the products and build customer confidence.", button_text:brand.hero_cta_text || "Start training", link_url:`/login?brand=${brand.slug}`, image_url:brand.hero_image_url ?? "", overlay:String(brand.hero_overlay ?? 60), alignment:brand.hero_alignment === "center" ? "center" : "left", height:["compact","large","full"].includes(brand.hero_height) ? brand.hero_height : "large" } },
