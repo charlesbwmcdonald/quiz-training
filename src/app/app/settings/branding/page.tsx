@@ -8,7 +8,7 @@ import PageBuilder from "@/components/page-builder";
 import type { LandingSection } from "@/lib/branding";
 
 type Brand = { id:string; name:string; slug:string; logo_url:string|null; primary_color:string; secondary_color:string; landing_headline:string|null; landing_description:string|null; hero_image_url:string|null; hero_overlay:number; hero_alignment:string; hero_height:string; hero_cta_text:string; promo_enabled:boolean; promo_text:string|null; landing_experience:LandingExperience };
-type Product = { product_id:string; name:string; status:string; category_name:string|null; parent_product_id:string|null; is_family:boolean; variation_count:number };
+type Product = { product_id:string; name:string; model_sku:string|null; status:string; category_name:string|null; parent_product_id:string|null; is_family:boolean; variation_count:number };
 const input = "min-h-12 border border-black/20 px-4 font-normal outline-none focus:border-black";
 const area = "border border-black/20 p-4 font-normal outline-none focus:border-black";
 
