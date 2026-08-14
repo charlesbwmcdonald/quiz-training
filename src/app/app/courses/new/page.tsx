@@ -5,7 +5,7 @@ import { getActiveBrand } from "@/lib/branding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CourseBuilder from "./course-builder";
 
-type ProductOption = { product_id: string; name: string; category_name?: string; status: string; parent_product_id: string | null };
+type ProductOption = { product_id: string; name: string; category_name?: string; status: string; parent_product_id: string | null; is_family:boolean; variation_count:number };
 
 export default async function NewCourse({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const query = await searchParams;

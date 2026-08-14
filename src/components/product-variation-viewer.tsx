@@ -19,6 +19,7 @@ export type ProductDetail = {
   product_url: string | null;
   variation_label?: string | null;
   variation_options?: Record<string, string>;
+  status?: string;
 };
 
 const text = (variation: ProductDetail | undefined, parent: ProductDetail, key: "name" | "tagline" | "description" | "model_sku" | "category_name" | "compatibility" | "product_url") => {
