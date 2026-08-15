@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ImageLightbox } from "@/components/image-lightbox";
+import { ProductOptionSelector } from "@/components/product-option-selector";
 import type { ProductDetail } from "@/components/product-variation-viewer";
 
 export function ProductReferenceViewer({ product, manufacturerSlug, primary, annotation }: { product: ProductDetail & { slug:string; variations?:ProductDetail[] }; manufacturerSlug:string; primary:string; annotation?:string }) {
@@ -18,7 +19,7 @@ export function ProductReferenceViewer({ product, manufacturerSlug, primary, ann
 
   return <div className="mt-5 grid gap-6">
     <div><p className="text-xs font-extrabold uppercase" style={{color:primary}}>{variation?.category_name || product.category_name || "Product"}</p><h3 className="mt-2 text-3xl font-extrabold uppercase">{name}</h3>{inheritText("tagline")&&<p className="mt-2 text-black/60">{inheritText("tagline")}</p>}</div>
-    {variations.length>0&&<div><p className="text-xs font-extrabold uppercase tracking-wide text-black/45">Choose configuration</p><div className="mt-2 flex gap-2 overflow-x-auto pb-2">{variations.map((item)=><button key={item.id} type="button" onClick={()=>setSelectedId(item.id??"")} className={`min-w-40 border-2 px-4 py-3 text-left text-sm font-bold ${item.id===selectedId?"border-black bg-black text-white":"border-black/15"}`}>{item.variation_label||item.name}{item.model_sku&&<span className={`mt-1 block text-xs ${item.id===selectedId?"text-white/50":"text-black/40"}`}>{item.model_sku}</span>}</button>)}</div></div>}
+    {variations.length>0&&<div><p className="text-xs font-extrabold uppercase tracking-wide text-black/45">Choose configuration</p><div className="mt-3"><ProductOptionSelector variations={variations} selectedId={selectedId} onSelect={setSelectedId} compact /></div></div>}
     <ImageLightbox key={selectedId||"parent"} images={images??[]} alt={name} className="grid grid-cols-2 gap-2 sm:grid-cols-3 [&_button]:aspect-[4/3]" />
     <p className="whitespace-pre-wrap leading-7 text-black/70">{inheritText("description")}</p>
     {annotation&&<div className="border-l-4 bg-black/5 p-5" style={{borderColor:primary}}><b className="uppercase">Training focus</b><p className="mt-2">{annotation}</p></div>}

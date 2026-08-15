@@ -136,7 +136,7 @@ export default function ProductEditor({
             </label>
             <fieldset className="mt-4">
               <legend className="font-bold">Variation attributes</legend>
-              <p className="mt-1 text-xs text-black/50">These become quick-reference labels such as Shank Size, Drop, Capacity, or Finish.</p>
+              <p className="mt-1 text-xs text-black/50">Add attributes in selection order, such as Weight Rating, Drop, then Shank. Up to three dependent levels are supported.</p>
               <div className="mt-3 grid gap-2">
                 {options.map((option) => (
                   <div key={option.id} className="grid grid-cols-[1fr_1fr_auto] gap-2">
@@ -156,9 +156,9 @@ export default function ProductEditor({
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => setOptions((all) => [...all, { id: uid(), label: "", value: "" }])} className="mt-3 text-sm font-extrabold uppercase" style={{ color: primary }}>
+              {options.length < 3 && <button type="button" onClick={() => setOptions((all) => [...all, { id: uid(), label: "", value: "" }])} className="mt-3 text-sm font-extrabold uppercase" style={{ color: primary }}>
                 + Add attribute
-              </button>
+              </button>}
             </fieldset>
           </div>
         )}
