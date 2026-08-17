@@ -1,0 +1,22 @@
+import Link from "next/link";
+import {redirect} from "next/navigation";
+import {ManufacturerHeader} from "@/components/manufacturer-shell";
+import {getActiveBrand} from "@/lib/branding";
+import {createSupabaseServerClient} from "@/lib/supabase/server";
+import {updateRetailer} from "../../actions";
+
+type RetailerProfile = {company_id:string;company_name:string;address_line_1:string|null;address_line_2:string|null;city:string|null;state_region:string|null;postal_code:string|null;phone:string|null;website:string|null;contact_name:string|null;contact_email:string|null};
+
+export default async function EditRetailerPage({params,searchParams}:{params:Promise<{companyId:string}>;searchParams:Promise<{error?:string}>}) {
+  const [{companyId}, query] = await Promise.all([params, searchParams]);
+  const supabase = await createSupabaseServerClient();
+  const [{data:auth}, brand, {data:rows}, {data:profiles}] = await Promise.all([supabase.auth.getUser(), getActiveBrand(), supabase.rpc("manufacturer_retailer_dashboard"), supabase.rpc("manufacturer_retailer_profiles")]);
+  if (!auth.user) redirect("/login");
+  if (!brand?.can_manage_training) redirect("/app");
+  const base = ((rows ?? []) as {company_id:string;company_name:string}[]).find(row => row.company_id === companyId);
+  const profile = ((profiles ?? []) as Omit<RetailerProfile,"company_name">[]).find(row => row.company_id === companyId);
+  if (!base || !profile) redirect("/app/retailers");
+  const retailer:RetailerProfile = {...base,...profile};
+  const input = "min-h-12 border border-black/20 bg-white px-4 font-normal outline-none focus:border-black";
+  return <div className="min-h-screen bg-[#f4f4f2]"><ManufacturerHeader brand={brand} email={auth.user.email}/><main className="mx-auto max-w-4xl px-5 py-10 lg:px-8 lg:py-14"><Link href={`/m/${brand.slug}/app/retailers`} className="text-sm font-extrabold uppercase text-black/55 hover:text-black">← Retailers</Link><p className="mt-8 text-sm font-extrabold uppercase italic tracking-[.2em]" style={{color:brand.primary_color}}>Retailer directory</p><h1 className="mt-2 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">Edit retailer</h1><p className="mt-3 max-w-2xl text-black/60">Keep location and contact information current for filtering, assignments, and future retailer reporting.</p>{query.error&&<div className="mt-6 bg-red-50 p-4 font-semibold text-red-900">{query.error}</div>}<form action={updateRetailer} className="mt-10 grid gap-5 border border-black/10 bg-white p-6 shadow-sm sm:grid-cols-2 lg:p-8"><input type="hidden" name="companyId" value={companyId}/><label className="grid gap-2 font-bold sm:col-span-2">Retailer name<input name="name" required defaultValue={retailer.company_name} className={input}/></label><label className="grid gap-2 font-bold sm:col-span-2">Address<input name="addressLine1" autoComplete="address-line1" defaultValue={retailer.address_line_1??""} className={input}/></label><label className="grid gap-2 font-bold sm:col-span-2">Address line 2<input name="addressLine2" autoComplete="address-line2" defaultValue={retailer.address_line_2??""} className={input}/></label><label className="grid gap-2 font-bold">City<input name="city" autoComplete="address-level2" defaultValue={retailer.city??""} className={input}/></label><label className="grid gap-2 font-bold">State / province<input name="stateRegion" autoComplete="address-level1" defaultValue={retailer.state_region??""} className={input}/></label><label className="grid gap-2 font-bold">Postal code<input name="postalCode" autoComplete="postal-code" defaultValue={retailer.postal_code??""} className={input}/></label><label className="grid gap-2 font-bold">Phone number<input name="phone" type="tel" autoComplete="tel" defaultValue={retailer.phone??""} className={input}/></label><label className="grid gap-2 font-bold sm:col-span-2">Website<input name="website" type="url" placeholder="https://" defaultValue={retailer.website??""} className={input}/></label><label className="grid gap-2 font-bold">Primary contact<input name="contactName" autoComplete="name" defaultValue={retailer.contact_name??""} className={input}/></label><label className="grid gap-2 font-bold">Contact email<input name="contactEmail" type="email" autoComplete="email" defaultValue={retailer.contact_email??""} className={input}/></label><button className="min-h-12 font-extrabold uppercase text-white sm:col-span-2" style={{backgroundColor:brand.primary_color}}>Save retailer</button></form></main></div>;
+}

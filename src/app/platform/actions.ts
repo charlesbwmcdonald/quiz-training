@@ -48,3 +48,28 @@ export async function openManufacturerDashboard(formData: FormData) {
   if (error || typeof slug !== "string") redirect(`/platform?error=${encodeURIComponent(error?.message || "Manufacturer could not be opened.")}`);
   redirect(`/m/${slug}/app`);
 }
+
+export async function managePlatformUser(formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("manage_platform_user", {
+    target_user_id: String(formData.get("userId") ?? ""),
+    membership_scope: String(formData.get("scope") ?? ""),
+    target_org_id: String(formData.get("organizationId") ?? "") || null,
+    next_role: String(formData.get("role") ?? "") || null,
+    next_action: String(formData.get("action") ?? "update"),
+  });
+  if (error) redirect(`/platform?error=${encodeURIComponent(error.message)}#users`);
+  revalidatePath("/platform");
+  redirect("/platform?updated=1#users");
+}
+
+export async function managePlatformInvitation(formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("manage_platform_invitation", {
+    target_invitation_id: String(formData.get("invitationId") ?? ""),
+    next_action: String(formData.get("action") ?? ""),
+  });
+  if (error) redirect(`/platform?error=${encodeURIComponent(error.message)}#invitations`);
+  revalidatePath("/platform");
+  redirect("/platform?updated=1#invitations");
+}

@@ -15,3 +15,17 @@ export async function manageInvitation(formData: FormData) {
   if (error) redirect(`/app/users?error=${encodeURIComponent(error.message)}`);
   revalidatePath("/app/users");
 }
+
+export async function manageMember(formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("manage_manufacturer_member", {
+    target_user_id: String(formData.get("userId") ?? ""),
+    membership_scope: String(formData.get("scope") ?? ""),
+    target_company_id: String(formData.get("companyId") ?? "") || null,
+    next_role: String(formData.get("role") ?? "") || null,
+    next_action: String(formData.get("action") ?? "update"),
+  });
+  if (error) redirect(`/app/users?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/app/users");
+  redirect("/app/users?updated=1");
+}

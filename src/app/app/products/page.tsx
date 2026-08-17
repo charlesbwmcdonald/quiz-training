@@ -39,14 +39,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return <div className="min-h-screen bg-[#f4f4f2]">
     <ManufacturerHeader brand={brand} email={auth.user.email} />
-    <main className="mx-auto max-w-7xl px-5 py-10">
+    <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
       <div className="flex flex-wrap justify-between gap-5">
         <div>
-          <p className="text-sm font-extrabold uppercase tracking-[.2em]" style={{ color: brand.primary_color }}>Reusable content</p>
-          <h1 className="mt-2 text-4xl font-extrabold uppercase">Product Library</h1>
+          <p className="text-sm font-extrabold uppercase italic tracking-[.2em]" style={{ color: brand.primary_color }}>Reusable content</p>
+          <h1 className="mt-2 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">Product Library</h1>
           <p className="mt-3 text-black/55">Build standalone products or group selectable SKUs beneath a shared product family.</p>
         </div>
-        <Link href={`/m/${brand.slug}/app/products/new`} className="self-end px-6 py-4 font-extrabold uppercase text-white" style={{ backgroundColor: brand.primary_color }}>+ Add product</Link>
+        <div className="flex flex-wrap gap-3 self-end"><Link href={`/m/${brand.slug}/app/products/import`} className="grid min-h-13 place-items-center border-2 border-black px-6 font-extrabold uppercase transition hover:bg-black hover:text-white">Import Products</Link><Link href={`/m/${brand.slug}/app/products/new`} className="grid min-h-13 place-items-center px-6 font-extrabold uppercase text-white transition hover:brightness-90" style={{ backgroundColor: brand.primary_color }}>+ Add Product</Link></div>
       </div>
 
       {query.error && <div className="mt-6 bg-red-50 p-4 text-red-900">{query.error}</div>}

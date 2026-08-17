@@ -22,7 +22,7 @@ export async function assignInternalQuiz(formData: FormData) {
   });
   if (error) redirect(`/app?error=${encodeURIComponent(error.message)}`);
   revalidatePath("/app");
-  revalidatePath("/app/team-training");
+  revalidatePath("/app/my-training");
 }
 
 export async function changeQuizStatus(formData: FormData) {

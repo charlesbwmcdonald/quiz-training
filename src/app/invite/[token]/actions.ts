@@ -10,6 +10,6 @@ export async function createInvitedAccount(formData: FormData) {
   const origin=(await headers()).get("origin")||"http://localhost:3000";
   const {data,error}=await supabase.auth.signUp({email:invite.email,password,options:{emailRedirectTo:`${origin}/auth/callback?next=${encodeURIComponent(`/invite/${token}/accept`)}`}});
   if(error) redirect(`/invite/${token}?error=${encodeURIComponent(error.message)}`);
-  if(data.session){const {error:acceptError}=await supabase.rpc("accept_training_invitation",{invitation_token:token});if(acceptError) redirect(`/invite/${token}?error=${encodeURIComponent(acceptError.message)}`);redirect("/app");}
+  if(data.session){const {error:acceptError}=await supabase.rpc("accept_training_invitation",{invitation_token:token});if(acceptError) redirect(`/invite/${token}?error=${encodeURIComponent(acceptError.message)}`);const {data:destination}=await supabase.rpc("get_post_login_destination");redirect(typeof destination==="string"?destination:"/app");}
   redirect(`/invite/${token}?checkEmail=1`);
 }

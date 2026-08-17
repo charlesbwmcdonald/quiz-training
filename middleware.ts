@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
   const scopedMatch = pathname.match(/^\/m\/([^/]+)\/app(?:\/.*)?$/);
   const isManufacturerPortal = pathname.startsWith("/app") || Boolean(scopedMatch);
 
-  if ((isManufacturerPortal || pathname.startsWith("/platform")) && !isAuthed) {
+  if ((isManufacturerPortal || pathname.startsWith("/platform") || pathname.startsWith("/academies")) && !isAuthed) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
@@ -92,5 +92,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/m/:manufacturerSlug/app/:path*", "/platform/:path*", "/login"],
+  matcher: ["/app/:path*", "/m/:manufacturerSlug/app/:path*", "/platform/:path*", "/academies/:path*", "/login"],
 };
