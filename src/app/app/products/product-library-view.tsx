@@ -42,14 +42,20 @@ function ProductActions({ product, manufacturerSlug, primary, variationCount = 0
 
 function VariationRows({ product, manufacturerSlug, primary, compact = false }: { product:LibraryProduct; manufacturerSlug:string; primary:string; compact?:boolean }) {
   return product.variations.length ? <div className={compact ? "divide-y divide-black/5" : "mt-3 grid gap-2"}>
-    {product.variations.map((variation)=><div key={variation.product_id} className={`${compact ? "bg-black/[.018] px-5 py-4 sm:pl-14" : "border bg-white p-4"} grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center`}>
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2"><b>{variation.variation_label || variation.name}</b><span className={`px-2 py-1 text-[10px] font-extrabold uppercase ${statusClass(variation.status)}`}>{statusLabel(variation.status)}</span></div>
-        <span className="mt-1 block text-xs text-black/45">{variation.model_sku || "No SKU"}</span>
-        {Object.keys(variation.variation_options ?? {}).length > 0 && <span className="mt-2 flex flex-wrap gap-1.5">{Object.entries(variation.variation_options).map(([label,value])=><span key={label} className="bg-black/5 px-2 py-1 text-[10px] font-bold uppercase">{label}: {value}</span>)}</span>}
+    {product.variations.map((variation)=>{const options=Object.entries(variation.variation_options ?? {});return <article key={variation.product_id} className={`${compact ? "bg-black/[.018] sm:ml-14" : "border bg-white"} overflow-hidden`}>
+      <div className={compact ? "px-5 py-3" : "p-3"}>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0"><b className="block text-sm">{variation.variation_label || variation.name}</b><span className="mt-0.5 block text-xs text-black/45">{variation.model_sku || "No SKU"}</span></div>
+          <span className={`shrink-0 px-2 py-1 text-[10px] font-extrabold uppercase ${statusClass(variation.status)}`}>{statusLabel(variation.status)}</span>
+        </div>
+        {options.length > 0 && <div className="mt-2.5 grid gap-px overflow-hidden border border-black/10 bg-black/10">
+          {options.map(([label,value])=><div key={label} className="grid min-h-8 items-center gap-0.5 bg-white px-3 py-1.5 sm:grid-cols-[minmax(120px,.35fr)_minmax(0,1fr)] sm:gap-4">
+            <span className="text-[10px] font-extrabold uppercase tracking-wide text-black/45">{label}</span><span className="min-w-0 break-words text-xs font-bold sm:text-right">{value}</span>
+          </div>)}
+        </div>}
       </div>
-      <ProductActions product={variation} manufacturerSlug={manufacturerSlug} primary={primary}/>
-    </div>)}
+      <div className={`${compact ? "px-5" : "px-3"} border-t border-black/10 py-2.5`}><ProductActions product={variation} manufacturerSlug={manufacturerSlug} primary={primary}/></div>
+    </article>})}
   </div> : <p className={`${compact ? "px-5 py-5 sm:pl-14" : "mt-3 border border-dashed p-4"} text-sm text-black/45`}>No variations yet. Add the first selectable SKU or configuration.</p>;
 }
 

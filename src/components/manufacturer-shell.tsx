@@ -4,6 +4,24 @@ import { switchAcademy } from "@/app/academies/actions";
 import { getAcademyDirectory } from "@/lib/academies";
 import type { ManufacturerBrand } from "@/lib/branding";
 
+type PublicBrandHeader = Pick<ManufacturerBrand, "name" | "slug" | "logo_url" | "primary_color">;
+
+export function PublicManufacturerHeader({ brand, showAcademyHome = false }: { brand: PublicBrandHeader; showAcademyHome?: boolean }) {
+  return <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 backdrop-blur">
+    <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
+      <Link href={`/m/${brand.slug}`} className="flex min-w-0 items-center gap-4" aria-label={`${brand.name} training center home`}>
+        {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={190} height={52} className="max-h-11 w-auto object-contain" priority unoptimized /> : <span className="truncate text-xl font-extrabold uppercase">{brand.name}</span>}
+        <span className="hidden border-l border-black/20 pl-4 text-xs font-bold uppercase tracking-[0.18em] text-black/55 sm:block">Training Center</span>
+      </Link>
+      <nav aria-label="Academy navigation" className="flex shrink-0 items-center gap-2 sm:gap-3">
+        {showAcademyHome && <Link href={`/m/${brand.slug}`} className="hidden px-3 py-3 text-xs font-extrabold uppercase tracking-wide text-black/55 hover:text-black sm:inline-flex">Academy home</Link>}
+        <Link href={`/login?brand=${encodeURIComponent(brand.slug)}`} className="inline-flex min-h-11 items-center px-4 text-xs font-extrabold uppercase tracking-wide text-white transition hover:brightness-90 sm:px-5" style={{ backgroundColor: brand.primary_color }}>Sign in</Link>
+      </nav>
+    </div>
+    <div className="h-1" style={{ backgroundColor: brand.primary_color }} />
+  </header>;
+}
+
 export async function ManufacturerHeader({ brand, email }: { brand: ManufacturerBrand; email?: string | null }) {
   const portal = `/m/${brand.slug}/app`;
   const menuLink = "block min-w-48 px-4 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-black hover:bg-black/5";

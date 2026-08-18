@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPublicBrand, getPublicLandingExperience } from "@/lib/branding";
 import { AnnouncementBar, ProductCarousel } from "@/components/landing-experience";
 import LandingPageSections from "@/components/landing-page-sections";
+import { PublicManufacturerHeader } from "@/components/manufacturer-shell";
 
 export default async function ManufacturerLandingPage({ params }: { params: Promise<{ manufacturerSlug: string }> }) {
   const { manufacturerSlug } = await params;
@@ -16,15 +17,7 @@ export default async function ManufacturerLandingPage({ params }: { params: Prom
   return (
     <main className="min-h-screen bg-white text-black">
       {!publishedSections?.length && brand.promo_enabled && <AnnouncementBar announcements={announcements} color={brand.primary_color} />}
-      <header className="border-b border-black/10 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
-          <Link href={`/m/${brand.slug}`} className="flex items-center gap-4">
-            {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={190} height={52} className="max-h-12 w-auto object-contain" priority unoptimized /> : <span className="text-xl font-extrabold uppercase">{brand.name}</span>}
-            <span className="hidden border-l border-black/20 pl-4 text-xs font-bold uppercase tracking-[0.18em] text-black/55 sm:block">Training Center</span>
-          </Link>
-          <Link href={`/login?brand=${encodeURIComponent(brand.slug)}`} className="px-5 py-3 text-sm font-extrabold uppercase tracking-wide text-white transition hover:opacity-85" style={{ backgroundColor: brand.primary_color }}>Sign in</Link>
-        </div>
-      </header>
+      <PublicManufacturerHeader brand={brand} />
 
       {publishedSections?.length ? <LandingPageSections sections={publishedSections} brand={brand} products={experience?.products ?? []}/> : <>
 

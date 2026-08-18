@@ -1,8 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProductVariationViewer, type ProductDetail } from "@/components/product-variation-viewer";
+import { PublicManufacturerHeader } from "@/components/manufacturer-shell";
 
 type Product = ProductDetail & {
   manufacturer_name: string;
@@ -20,12 +19,7 @@ export default async function PublicProduct({ params }: { params: Promise<{ manu
   const product = data as Product;
 
   return <main className="min-h-screen bg-white">
-    <header className="border-b">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-        {product.logo_url ? <Image src={product.logo_url} alt={product.manufacturer_name} width={180} height={48} className="max-h-12 w-auto" unoptimized /> : <b className="uppercase">{product.manufacturer_name}</b>}
-        <Link href={`/m/${product.manufacturer_slug}`} className="text-sm font-bold uppercase">Training center</Link>
-      </div>
-    </header>
+    <PublicManufacturerHeader brand={{ name: product.manufacturer_name, slug: product.manufacturer_slug, logo_url: product.logo_url, primary_color: product.primary_color }} showAcademyHome />
     <ProductVariationViewer parent={product} variations={product.variations ?? []} primary={product.primary_color} />
   </main>;
 }
