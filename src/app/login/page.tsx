@@ -16,8 +16,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; brand?: string; force?: string; reset?: string }> }) {
   const params = await searchParams;
   const next = params?.next ?? "/app";
+  const inferredBrand=params.brand??next.match(/^\/m\/([^/]+)\/app/)?.[1];
   const platformLogin = next.startsWith("/platform");
-  const [brand, experience] = await Promise.all([getPublicBrand(params.brand), getPublicLandingExperience(params.brand)]);
+  const [brand, experience] = await Promise.all([getPublicBrand(inferredBrand), getPublicLandingExperience(inferredBrand)]);
   const primary = brand?.primary_color ?? (platformLogin ? "#ff4f1f" : "#D90000");
   const secondary = brand?.secondary_color ?? (platformLogin ? "#101010" : "#000000");
   const loginExperience = experience?.settings.login;

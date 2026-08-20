@@ -54,7 +54,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
         </details>}
         <Link href="/academies" className="px-2 text-xs font-extrabold uppercase text-black/55 hover:text-black md:hidden">Academies</Link>
         {email && <span className="hidden max-w-48 truncate font-normal normal-case tracking-normal text-black/45 xl:block">{email}</span>}
-        <form action="/logout" method="post">
+        <form action={`/logout?brand=${encodeURIComponent(brand.slug)}`} method="post">
           <button type="submit" className="px-2 text-black/55 hover:text-black">Sign out</button>
         </form>
       </nav>
