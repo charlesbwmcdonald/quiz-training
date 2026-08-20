@@ -39,7 +39,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
             {brand.can_manage_training && <Link href={portal} prefetch={false} className={menuLink}>Quizzes</Link>}
             {brand.can_manage_training && <Link href={`${portal}/courses`} prefetch={false} className={menuLink}>Courses</Link>}
             {brand.can_manage_training && <Link href={`${portal}/products`} prefetch={false} className={menuLink}>Products</Link>}
-            <div className={brand.can_manage_training ? "mt-1 border-t border-black/10 pt-1" : ""}><Link href={`${portal}/my-training`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Training</Link><Link href="/academies" prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Academies</Link></div>
+            <div className={brand.can_manage_training ? "mt-1 border-t border-black/10 pt-1" : ""}><Link href={`${portal}/my-training`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Training</Link><Link href={`${portal}/certificates`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>Certificates</Link><Link href="/academies" prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Academies</Link></div>
           </div>
         </details>
         {(brand.can_manage_training || brand.can_view_reports || brand.can_manage_brand) && <details className="group relative">
