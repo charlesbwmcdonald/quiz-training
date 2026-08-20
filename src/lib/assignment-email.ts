@@ -5,6 +5,8 @@ const escape=(value:string)=>value.replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;
 const site=()=>`${(process.env.NEXT_PUBLIC_SITE_URL?.trim()||"http://localhost:3000").replace(/\/$/,"")}`;
 
 export async function sendAssignmentEmails(supabase:SupabaseClient,args:{contentType:string;contentId:string;companyIds:string[];manufacturerTeam:boolean;required:boolean;dueAt:string|null}){
+  const {data:enabled}=await supabase.rpc("assignment_notifications_enabled");
+  if(!enabled)return{sent:0,failed:0,configured:true,disabled:true};
   if(!process.env.RESEND_API_KEY?.trim())return{sent:0,failed:0,configured:false};
   const {data,error}=await supabase.rpc("assignment_email_recipients",{target_content_type:args.contentType,target_content_id:args.contentId,target_company_ids:args.companyIds,include_manufacturer_team:args.manufacturerTeam});
   if(error||!data)return{sent:0,failed:0,configured:true};

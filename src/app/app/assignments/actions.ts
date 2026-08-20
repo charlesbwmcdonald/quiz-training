@@ -26,7 +26,7 @@ export async function saveTrainingAssignments(formData:FormData) {
   }
   const delivery=notify?await sendAssignmentEmails(supabase,{contentType,contentId,companyIds,manufacturerTeam,required,dueAt}):null;
   revalidatePath("/app/assignments");revalidatePath("/app");revalidatePath("/app/courses");revalidatePath("/app/my-training");
-  redirect(`/app/assignments?saved=${companyIds.length+(manufacturerTeam?1:0)}${delivery?`&notified=${delivery.sent}&emailFailed=${delivery.failed}`:""}`);
+  redirect(`/app/assignments?saved=${companyIds.length+(manufacturerTeam?1:0)}${delivery&&!delivery.disabled?`&notified=${delivery.sent}&emailFailed=${delivery.failed}`:""}`);
 }
 
 function assignmentTarget(formData:FormData) {
