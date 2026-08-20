@@ -26,9 +26,43 @@ export async function saveTrainingAssignments(formData:FormData) {
   redirect(`/app/assignments?saved=${companyIds.length+(manufacturerTeam?1:0)}`);
 }
 
+function assignmentTarget(formData:FormData) {
+  return {
+    target_audience_type:String(formData.get("audienceType")??""),
+    target_audience_id:String(formData.get("audienceId")??"")||null,
+    target_content_type:String(formData.get("contentType")??""),
+    target_content_id:String(formData.get("contentId")??""),
+  };
+}
+
+export async function updateAssignment(formData:FormData) {
+  const supabase=await createSupabaseServerClient();
+  const dueDate=String(formData.get("dueDate")??"");
+  const {error}=await supabase.rpc("update_training_assignment",{
+    ...assignmentTarget(formData),
+    required:formData.get("required")==="on",
+    target_due_at:dueDate?new Date(`${dueDate}T23:59:59`).toISOString():null,
+  });
+  if(error)redirect(`/app/assignments?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/app/assignments");revalidatePath("/app");revalidatePath("/app/my-training");
+  redirect("/app/assignments?updated=1");
+}
+
 export async function removeAssignment(formData:FormData) {
   const supabase=await createSupabaseServerClient();
-  const {error}=await supabase.rpc("remove_manufacturer_assignment",{target_company_id:String(formData.get("companyId")??""),target_quiz_id:String(formData.get("quizId")??"")});
+  const {error}=await supabase.rpc("remove_training_assignment",assignmentTarget(formData));
   if(error)redirect(`/app/assignments?error=${encodeURIComponent(error.message)}`);
-  revalidatePath("/app/assignments");revalidatePath("/app/retailers");
+  revalidatePath("/app/assignments");revalidatePath("/app");revalidatePath("/app/my-training");revalidatePath("/app/retailers");
+  redirect("/app/assignments?removed=1");
+}
+
+export async function bulkRemoveAssignments(formData:FormData) {
+  const keys=formData.getAll("assignmentKeys").map(String);
+  if(!keys.length)redirect("/app/assignments?error=Choose+at+least+one+assignment.");
+  const targets=keys.map(target=>{const [audienceType,audienceId,contentType,contentId]=target.split(":");return {audienceType,audienceId,contentType,contentId};});
+  const supabase=await createSupabaseServerClient();
+  const {error}=await supabase.rpc("remove_training_assignments",{targets});
+  if(error)redirect(`/app/assignments?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/app/assignments");revalidatePath("/app");revalidatePath("/app/my-training");revalidatePath("/app/retailers");
+  redirect(`/app/assignments?removed=${targets.length}`);
 }
