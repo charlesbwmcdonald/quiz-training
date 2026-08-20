@@ -44,19 +44,44 @@ export default async function Page({
     title: string,
     copy: string,
     checked: boolean,
+    timing?: { name: string; value: number; label: string },
   ) => (
-    <label className="flex items-center justify-between gap-5 border-b border-black/10 py-5">
-      <span>
+    <div className="grid min-h-24 gap-4 border-b border-black/10 py-5 sm:grid-cols-[minmax(240px,1fr)_180px_90px] sm:items-center sm:gap-6">
+      <div>
         <b className="block uppercase">{title}</b>
         <small className="mt-1 block text-black/45">{copy}</small>
-      </span>
-      <input
-        name={name}
-        type="checkbox"
-        defaultChecked={checked}
-        className="h-6 w-6"
-      />
-    </label>
+      </div>
+      <div>
+        {timing ? (
+          <label className="flex items-center gap-3">
+            <input
+              name={timing.name}
+              type="number"
+              min="1"
+              defaultValue={timing.value}
+              aria-label={`${title} day count`}
+              className={`${input} w-20 text-center font-bold`}
+            />
+            <span className="text-xs font-extrabold uppercase text-black/50">
+              Days {timing.label}
+            </span>
+          </label>
+        ) : (
+          <span className="hidden text-black/20 sm:block">-</span>
+        )}
+      </div>
+      <label className="flex items-center gap-3 sm:justify-center">
+        <input
+          name={name}
+          type="checkbox"
+          defaultChecked={checked}
+          className="h-6 w-6"
+        />
+        <span className="text-xs font-extrabold uppercase text-black/45 sm:hidden">
+          Enabled
+        </span>
+      </label>
+    </div>
   );
   return (
     <div className="min-h-screen bg-[#f4f4f2]">
@@ -135,6 +160,11 @@ export default async function Page({
             <h2 className="text-2xl font-extrabold uppercase">
               Delivery rules
             </h2>
+            <div className="mt-5 hidden grid-cols-[minmax(240px,1fr)_180px_90px] gap-6 border-y border-black/10 bg-black/[.03] px-0 py-3 text-xs font-extrabold uppercase tracking-wide text-black/45 sm:grid">
+              <span>Notification</span>
+              <span>Timing</span>
+              <span className="text-center">Enabled</span>
+            </div>
             {toggle(
               "assignment",
               "New assignments",
@@ -146,36 +176,19 @@ export default async function Page({
               "Due soon",
               "Remind learners before training is due.",
               x.due_soon_enabled,
+              { name: "dueDays", value: x.due_soon_days, label: "before" },
             )}
-            <label className="flex items-center justify-between border-b border-black/10 py-4 text-sm">
-              <span>Send due-soon reminder this many days before</span>
-              <input
-                name="dueDays"
-                type="number"
-                min="1"
-                defaultValue={x.due_soon_days}
-                className={`${input} w-24`}
-              />
-            </label>
             {toggle(
               "overdue",
               "Overdue training",
               "Continue reminders after a due date passes.",
               x.overdue_enabled,
+              {
+                name: "overdueDays",
+                value: x.overdue_repeat_days,
+                label: "after",
+              },
             )}
-            <label className="flex items-center justify-between border-b border-black/10 py-4 text-sm">
-              <span>Repeat overdue reminders every</span>
-              <span>
-                <input
-                  name="overdueDays"
-                  type="number"
-                  min="1"
-                  defaultValue={x.overdue_repeat_days}
-                  className={`${input} mr-2 w-24`}
-                />
-                days
-              </span>
-            </label>
             {toggle(
               "certificate",
               "Certificate earned",
