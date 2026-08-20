@@ -27,12 +27,12 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
   const academyHome = brand.can_manage_training ? portal : `${portal}/my-training`;
   const menuLink = "block min-w-48 px-4 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-black hover:bg-black/5";
   const {academies}=await getAcademyDirectory();
-  return <header className="border-b border-black/10 bg-white">
-    <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
+  return <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 backdrop-blur">
+    <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-5 sm:px-5 sm:py-4 lg:px-8">
       <div className="flex min-w-0 items-center gap-3"><Link href={academyHome} prefetch={false} aria-label={`${brand.name} academy dashboard`} className="flex min-w-0 items-center gap-4">
-        {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={170} height={40} className="max-h-10 w-auto object-contain" priority unoptimized /> : <span className="truncate text-xl font-black uppercase">{brand.name}</span>}
+        {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={170} height={40} className="max-h-9 w-auto max-w-[108px] object-contain sm:max-h-10 sm:max-w-[170px]" priority unoptimized /> : <span className="max-w-[108px] truncate text-base font-black uppercase sm:max-w-none sm:text-xl">{brand.name}</span>}
       </Link><details className="group relative hidden md:block"><summary className="flex cursor-pointer list-none items-center gap-2 border-l border-black/15 py-1 pl-4 text-left marker:content-none [&::-webkit-details-marker]:hidden"><span><b className="block text-xs uppercase tracking-[.14em] text-black/55">{brand.name} Academy</b><span className="block text-[9px] font-bold uppercase tracking-[.12em] text-black/35">Powered by JobberTrain</span></span><span aria-hidden="true" className="text-[9px] transition group-open:rotate-180">▼</span></summary><div className="absolute left-0 z-50 mt-3 w-72 overflow-hidden border border-black/10 bg-white py-2 shadow-xl"><p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[.16em] text-black/35">Switch Academy</p>{academies.map(academy=>academy.id===brand.id?<div key={academy.id} className="flex items-center justify-between bg-black/[.04] px-4 py-3 text-xs font-extrabold uppercase"><span>{academy.name} Academy</span><span style={{color:brand.primary_color}}>Current</span></div>:<form key={academy.id} action={switchAcademy}><input type="hidden" name="academyId" value={academy.id}/><button className="block w-full px-4 py-3 text-left text-xs font-extrabold uppercase hover:bg-black/5">{academy.name} Academy</button></form>)}<Link href="/academies" className="mt-1 block border-t border-black/10 px-4 pt-3 text-xs font-extrabold uppercase hover:underline">My Academies & Invitations →</Link></div></details></div>
-      <nav aria-label="Main navigation" className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide sm:gap-4">
+      <nav aria-label="Main navigation" className="flex shrink-0 items-center gap-0 text-xs font-bold uppercase tracking-wide sm:gap-2 sm:text-sm lg:gap-4">
         <details className="group relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-2 marker:content-none hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden">Learn <span aria-hidden="true" className="text-[10px] transition group-open:rotate-180">▼</span></summary>
           <div className="absolute right-0 z-50 mt-2 overflow-hidden border border-black/10 bg-white py-1 shadow-xl">
@@ -54,10 +54,9 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
             {brand.can_manage_brand && <div className="mt-1 border-t border-black/10 pt-1"><Link href={`${portal}/settings/branding`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>Brand</Link></div>}
           </div>
         </details>}
-        <Link href="/academies" className="px-2 text-xs font-extrabold uppercase text-black/55 hover:text-black md:hidden">Academies</Link>
         {email && <span className="hidden max-w-48 truncate font-normal normal-case tracking-normal text-black/45 xl:block">{email}</span>}
         <form action={`/logout?brand=${encodeURIComponent(brand.slug)}`} method="post">
-          <button type="submit" className="px-2 text-black/55 hover:text-black">Sign out</button>
+          <button type="submit" className="min-h-11 px-2 text-black/55 hover:text-black"><span className="sm:hidden">Exit</span><span className="hidden sm:inline">Sign out</span></button>
         </form>
       </nav>
     </div>
