@@ -27,6 +27,18 @@ export async function login(formData: FormData) {
     redirect(`/login?next=${encodeURIComponent(next)}${brand ? `&brand=${encodeURIComponent(brand)}` : ""}&error=${encodeURIComponent("No session returned")}`);
   }
 
+  const invitationMatch = next.match(/^\/invite\/([0-9a-f-]{36})\/accept$/i);
+  if (invitationMatch) {
+    const { error: invitationError } = await supabase.rpc("accept_training_invitation", {
+      invitation_token: invitationMatch[1],
+    });
+    if (invitationError) {
+      redirect(`/invite/${invitationMatch[1]}?error=${encodeURIComponent(invitationError.message)}`);
+    }
+    const { data: destination } = await supabase.rpc("get_post_login_destination");
+    redirect(typeof destination === "string" && destination.startsWith("/") && !destination.startsWith("//") ? destination : "/app");
+  }
+
   if (!brand && next === "/app") {
     const { data: destination } = await supabase.rpc("get_post_login_destination");
     if (typeof destination === "string" && destination.startsWith("/") && !destination.startsWith("//")) redirect(destination);
