@@ -47,6 +47,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
           <div className="absolute right-0 z-50 mt-2 overflow-hidden border border-black/10 bg-white py-1 shadow-xl">
             {brand.can_manage_training && <Link href={`${portal}/retailers`} prefetch={false} className={menuLink}>Retailers</Link>}
             {brand.can_manage_training && <Link href={`${portal}/assignments`} prefetch={false} className={menuLink}>Assignments</Link>}
+            {brand.can_manage_training && <Link href={`${portal}/certifications`} prefetch={false} className={menuLink}>Certifications</Link>}
             {brand.can_view_reports && <Link href={`${portal}/reports`} prefetch={false} className={menuLink}>Reports</Link>}
             {brand.can_manage_brand && <Link href={`${portal}/users`} prefetch={false} className={menuLink}>Users</Link>}
             {brand.can_manage_brand && <div className="mt-1 border-t border-black/10 pt-1"><Link href={`${portal}/settings/branding`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>Brand</Link></div>}
