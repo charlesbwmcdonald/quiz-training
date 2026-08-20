@@ -13,7 +13,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   };
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; brand?: string; force?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; brand?: string; force?: string; reset?: string }> }) {
   const params = await searchParams;
   const next = params?.next ?? "/app";
   const platformLogin = next.startsWith("/platform");
@@ -41,6 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h2 className="mt-2 text-4xl font-extrabold uppercase tracking-tight">Sign in</h2>
           <p className="mt-3 text-black/60">{platformLogin && !brand ? "Enter your JobberTrain account details to manage your platform." : "Enter your account details to continue to training."}</p>
           {params?.error && <div role="alert" className="mt-6 border-l-4 border-[#d90000] bg-red-50 p-4 text-sm text-red-900"><b>We couldn’t sign you in.</b><br />{params.error}</div>}
+          {params.reset && <div role="status" className="mt-6 border-l-4 border-green-600 bg-green-50 p-4 text-sm text-green-900"><b>Password updated.</b><br />Sign in with your new password.</div>}
           <form action={login} className="mt-8 grid gap-5">
             <input type="hidden" name="next" value={next} />
             {params.force === "1" && <input type="hidden" name="force" value="1" />}
@@ -49,6 +50,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <label className="grid gap-2 font-bold">Password<input name="password" type="password" required autoComplete="current-password" className="min-h-13 border border-black/20 px-4 font-normal outline-none focus:border-[#d90000]" /></label>
             <button type="submit" className="mt-2 min-h-13 px-6 font-extrabold uppercase tracking-wide text-white transition hover:brightness-90" style={{ backgroundColor: primary }}>{platformLogin && !brand ? "Sign in to JobberTrain" : "Sign in to training"}</button>
           </form>
+          <Link href={`/forgot-password${brand?`?brand=${brand.slug}`:""}`} className="mt-5 inline-block text-sm font-bold hover:underline">Forgot password?</Link>
           <Link href={brand ? `/m/${brand.slug}` : "/"} className="mt-8 inline-block text-sm font-bold text-black/55 hover:underline">← Return to {platformLogin && !brand ? "JobberTrain" : "home page"}</Link>
         </div>
       </section>

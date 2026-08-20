@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendAssignmentEmails } from "@/lib/assignment-email";
 
 export async function saveTrainingAssignments(formData:FormData) {
   const [contentType,contentId]=String(formData.get("content")??"").split(":");
@@ -11,6 +12,7 @@ export async function saveTrainingAssignments(formData:FormData) {
   const required=formData.get("required")==="on";
   const dueDate=String(formData.get("dueDate")??"");
   const dueAt=dueDate?new Date(`${dueDate}T23:59:59`).toISOString():null;
+  const notify=formData.get("notify")==="on";
   if(!["quiz","course"].includes(contentType)||!contentId) redirect("/app/assignments?error=Choose+training+content.");
   if(!manufacturerTeam&&!companyIds.length) redirect("/app/assignments?error=Choose+the+manufacturer+team+or+at+least+one+retailer.");
   const supabase=await createSupabaseServerClient();
@@ -22,8 +24,9 @@ export async function saveTrainingAssignments(formData:FormData) {
     const {error}=contentType==="quiz"?await supabase.rpc("upsert_manufacturer_assignment",{target_company_id:companyId,target_quiz_id:contentId,required,target_due_at:dueAt}):await supabase.rpc("assign_manufacturer_course",{target_company_id:companyId,target_course_id:contentId,required,target_due_at:dueAt});
     if(error)redirect(`/app/assignments?error=${encodeURIComponent(error.message)}`);
   }
+  const delivery=notify?await sendAssignmentEmails(supabase,{contentType,contentId,companyIds,manufacturerTeam,required,dueAt}):null;
   revalidatePath("/app/assignments");revalidatePath("/app");revalidatePath("/app/courses");revalidatePath("/app/my-training");
-  redirect(`/app/assignments?saved=${companyIds.length+(manufacturerTeam?1:0)}`);
+  redirect(`/app/assignments?saved=${companyIds.length+(manufacturerTeam?1:0)}${delivery?`&notified=${delivery.sent}&emailFailed=${delivery.failed}`:""}`);
 }
 
 function assignmentTarget(formData:FormData) {
