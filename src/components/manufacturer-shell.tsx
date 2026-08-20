@@ -56,7 +56,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
         </details>}
         {email && <span className="hidden max-w-48 truncate font-normal normal-case tracking-normal text-black/45 xl:block">{email}</span>}
         <form action={`/logout?brand=${encodeURIComponent(brand.slug)}`} method="post">
-          <button type="submit" className="min-h-11 px-2 text-black/55 hover:text-black"><span className="sm:hidden">Exit</span><span className="hidden sm:inline">Sign out</span></button>
+          <button type="submit" className="min-h-11 px-2 text-black/55 hover:text-black">Sign out</button>
         </form>
       </nav>
     </div>
