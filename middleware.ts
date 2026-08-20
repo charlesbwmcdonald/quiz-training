@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname === "/login" && isAuthed) {
+  if (pathname === "/login" && isAuthed && request.nextUrl.searchParams.get("force") !== "1") {
     const url = request.nextUrl.clone();
     const requestedNext = url.searchParams.get("next");
     const requestedBrand = url.searchParams.get("brand");

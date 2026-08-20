@@ -13,7 +13,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   };
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; brand?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; brand?: string; force?: string }> }) {
   const params = await searchParams;
   const next = params?.next ?? "/app";
   const platformLogin = next.startsWith("/platform");
@@ -43,6 +43,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           {params?.error && <div role="alert" className="mt-6 border-l-4 border-[#d90000] bg-red-50 p-4 text-sm text-red-900"><b>We couldn’t sign you in.</b><br />{params.error}</div>}
           <form action={login} className="mt-8 grid gap-5">
             <input type="hidden" name="next" value={next} />
+            {params.force === "1" && <input type="hidden" name="force" value="1" />}
             {brand && <input type="hidden" name="brand" value={brand.slug} />}
             <label className="grid gap-2 font-bold">Email address<input name="email" type="email" required autoComplete="email" placeholder="you@company.com" className="min-h-13 border border-black/20 px-4 font-normal outline-none focus:border-[#d90000]" /></label>
             <label className="grid gap-2 font-bold">Password<input name="password" type="password" required autoComplete="current-password" className="min-h-13 border border-black/20 px-4 font-normal outline-none focus:border-[#d90000]" /></label>
