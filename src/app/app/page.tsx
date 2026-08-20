@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ManufacturerHeader } from "@/components/manufacturer-shell";
 import type { ManufacturerBrand } from "@/lib/branding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -16,6 +17,7 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
   const brand = (brandData?.[0] ?? null) as ManufacturerBrand | null;
   const primary = brand?.primary_color ?? "#D90000";
   const isManager = Boolean(brand?.can_manage_training);
+  if (brand && !isManager) redirect(`/m/${brand.slug}/app/my-training`);
   const [{ data, error }, { data: attemptCounts }, { data: courseData }, { data: internalQuizRows }] = await Promise.all([
     isManager ? supabase.from("quizzes").select("id,title,description,status,passing_score,created_at,quiz_questions(count)").order("created_at", { ascending: false }) : supabase.rpc("learner_training_dashboard"),
     isManager ? supabase.rpc("managed_quiz_attempt_counts") : Promise.resolve({ data: [] }),
