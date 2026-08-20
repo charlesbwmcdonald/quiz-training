@@ -9,13 +9,14 @@ type QuizRow = { id: string; title: string; description: string | null; passing_
 
 export default async function EditQuizPage({ params, searchParams }: { params: Promise<{ quizId: string }>; searchParams: Promise<{ error?: string }> }) {
   const [{ quizId }, query, brand, supabase] = await Promise.all([params, searchParams, getActiveBrand(), createSupabaseServerClient()]);
-  if (!brand) redirect("/app");
+  if (!brand?.can_manage_training) redirect("/app");
   const [{ data: auth }, { data }, { data: attemptCounts }, { data: products }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("quizzes").select("id,title,description,passing_score,status,quiz_questions(id,prompt,image_url,position,quiz_choices(id,label,is_correct,position))").eq("id", quizId).single(),
     supabase.rpc("managed_quiz_attempt_counts"),
     supabase.rpc("manufacturer_products_v2"),
   ]);
+  if (!auth.user) redirect("/login");
   if (!data) notFound();
   const quiz = data as QuizRow;
   const count = Number((attemptCounts ?? []).find((item: { quiz_id: string; attempt_count: number }) => item.quiz_id === quizId)?.attempt_count ?? 0);

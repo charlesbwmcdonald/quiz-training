@@ -15,6 +15,8 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
   const { data: authData } = await supabase.auth.getUser();
   const { data: brandData } = await supabase.rpc("get_active_manufacturer_brand");
   const brand = (brandData?.[0] ?? null) as ManufacturerBrand | null;
+  if (!authData.user) redirect("/login");
+  if (!brand) redirect("/academies");
   const primary = brand?.primary_color ?? "#D90000";
   const isManager = Boolean(brand?.can_manage_training);
   if (brand && !isManager) redirect(`/m/${brand.slug}/app/my-training`);

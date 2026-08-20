@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { LandingExperience } from "@/lib/branding";
+import { getActiveBrand, type LandingExperience } from "@/lib/branding";
 import { updateBranding } from "./actions";
 import BrandColorField from "./brand-color-field";
 import PageBuilder from "@/components/page-builder";
@@ -15,8 +15,12 @@ const area = "border border-black/20 p-4 font-normal outline-none focus:border-b
 export default async function BrandingSettingsPage({ searchParams }: { searchParams: Promise<{error?:string;saved?:string;mode?:string}> }) {
   const params = await searchParams;
   const supabase = await createSupabaseServerClient();
-  const { data: auth } = await supabase.auth.getUser();
+  const [{ data: auth }, activeBrand] = await Promise.all([
+    supabase.auth.getUser(),
+    getActiveBrand(),
+  ]);
   if (!auth.user) redirect("/login");
+  if (!activeBrand?.can_manage_brand) redirect("/app");
   const { data: profile } = await supabase.from("profiles").select("active_manufacturer_id").eq("id", auth.user.id).single();
   if (!profile?.active_manufacturer_id) redirect("/app");
   const [{ data }, { data: productRows }] = await Promise.all([

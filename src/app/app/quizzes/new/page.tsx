@@ -8,8 +8,9 @@ import { ManufacturerHeader } from "@/components/manufacturer-shell";
 export default async function NewQuizPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   const [brand, supabase] = await Promise.all([getActiveBrand(), createSupabaseServerClient()]);
-  if (!brand) redirect("/app");
+  if (!brand?.can_manage_training) redirect("/app");
   const [{ data: auth }, { data: products }] = await Promise.all([supabase.auth.getUser(), supabase.rpc("manufacturer_products_v2")]);
+  if (!auth.user) redirect("/login");
   const productImages = ((products ?? []) as { product_id:string; name:string; primary_image:string|null; parent_product_id:string|null; variation_label:string|null; model_sku:string|null; status:string }[])
     .filter((product) => product.status !== "archived" && Boolean(product.primary_image))
     .map((product): ProductImageOption => ({ productId:product.product_id, name:product.variation_label || product.name, imageUrl:product.primary_image!, detail:product.parent_product_id ? `Variation${product.model_sku ? ` · ${product.model_sku}` : ""}` : "Parent product" }));

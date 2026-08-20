@@ -21,7 +21,7 @@ export default async function ProductPreview({ params }: { params: Promise<{ pro
   ]);
 
   if (!auth.user) redirect("/login");
-  if (!brand || !data) notFound();
+  if (!brand?.can_manage_training || !data) notFound();
 
   const product = data as PreviewProduct;
 
