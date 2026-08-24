@@ -36,7 +36,7 @@ export type LandingExperience = {
   published_at?: string;
 };
 
-export type LandingSection = { id:string; type:"announcement"|"hero"|"carousel"|"benefits"|"banner"|"cta"; enabled:boolean; config:Record<string, string|string[]|boolean> };
+export type LandingSection = { id:string; type:"announcement"|"hero"|"carousel"|"benefits"|"banner"|"cta"|"product_showcase"|"category_explorer"|"split_feature"|"dealer_program"|"featured_training"; enabled:boolean; config:Record<string, string|string[]|boolean> };
 
 export type PublicLandingExperience = {
   settings: LandingExperience;

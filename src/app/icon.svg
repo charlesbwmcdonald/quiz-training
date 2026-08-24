@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-labelledby="title">
   <title id="title">JobberTrain</title>
   <rect width="1080" height="1080" fill="#000"/>
@@ -8,5 +7,4 @@
     <polygon fill="#ff4f1f" points="442 693.7 442 378.98 254.41 378.98 254.41 198.01 826.99 198.01 826.99 378.98 637.65 378.98 637.65 693.7 442 693.7"/>
     <path d="M799.17 225.84v125.32H609.82v314.72H469.83V351.16H282.24V225.84h516.93m55.65-55.65H226.59v236.62h187.59v314.72h251.29V406.81h189.35V170.19Z"/>
   </g>
-  <text x="540" y="948" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800" letter-spacing="2" text-anchor="middle">JOBBERTRAIN</text>
 </svg>

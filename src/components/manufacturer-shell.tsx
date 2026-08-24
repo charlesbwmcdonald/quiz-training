@@ -39,6 +39,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
             {brand.can_manage_training && <Link href={portal} prefetch={false} className={menuLink}>Quizzes</Link>}
             {brand.can_manage_training && <Link href={`${portal}/courses`} prefetch={false} className={menuLink}>Courses</Link>}
             {brand.can_manage_training && <Link href={`${portal}/products`} prefetch={false} className={menuLink}>Products</Link>}
+            <Link href={`${portal}/dealer-programs`} prefetch={false} className={menuLink}>Dealer Programs</Link>
             <div className={brand.can_manage_training ? "mt-1 border-t border-black/10 pt-1" : ""}><Link href={`${portal}/my-training`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Training</Link><Link href="/academies" prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Academies</Link><Link href={`${portal}/certificates`} prefetch={false} className={menuLink} style={{ color: brand.primary_color }}>My Certificates</Link></div>
           </div>
         </details>
@@ -48,6 +49,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
             {brand.can_manage_training && <Link href={`${portal}/retailers`} prefetch={false} className={menuLink}>Retailers</Link>}
             {brand.can_manage_training && <Link href={`${portal}/assignments`} prefetch={false} className={menuLink}>Assignments</Link>}
             {brand.can_manage_training && <Link href={`${portal}/certifications`} prefetch={false} className={menuLink}>Certifications</Link>}
+            {brand.can_manage_training && <Link href={`${portal}/programs`} prefetch={false} className={menuLink}>Programs</Link>}
             {brand.can_manage_training && <Link href={`${portal}/notifications`} prefetch={false} className={menuLink}>Notifications</Link>}
             {brand.can_view_reports && <Link href={`${portal}/reports`} prefetch={false} className={menuLink}>Reports</Link>}
             {brand.can_manage_brand && <Link href={`${portal}/users`} prefetch={false} className={menuLink}>Users</Link>}

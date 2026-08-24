@@ -24,7 +24,7 @@ export async function updateBranding(formData: FormData) {
     if (rawSections.length > 60000) throw new Error();
     const parsed = JSON.parse(rawSections);
     if (!Array.isArray(parsed)) throw new Error();
-    const allowed = new Set(["announcement", "hero", "carousel", "benefits", "banner", "cta"]);
+    const allowed = new Set(["announcement", "hero", "carousel", "benefits", "banner", "cta", "product_showcase", "category_explorer", "split_feature", "dealer_program", "featured_training"]);
     pageSections = parsed.filter((section) => section && typeof section.id === "string" && allowed.has(section.type) && typeof section.config === "object").slice(0, 30);
   } catch {
     fail("The landing-page layout could not be saved. Refresh and try again.");
@@ -69,8 +69,13 @@ export async function updateBranding(formData: FormData) {
     const image = formData.get(`sectionImage:${section.id}`);
     const imageUrl = await uploadBrandImage(image, `${section.type}-${section.id}`);
     if (imageUrl) section.config.image_url = imageUrl;
+    if (section.type === "split_feature") {
+      const secondaryImage = formData.get(`sectionImage:${section.id}:secondary`);
+      const secondaryImageUrl = await uploadBrandImage(secondaryImage, `${section.type}-${section.id}-secondary`);
+      if (secondaryImageUrl) section.config.image_url_2 = secondaryImageUrl;
+    }
   }
-  if (pageSections.some((section) => !safeLink(section.config.link_url) || !safeLink(section.config.image_url))) fail("Landing-page links must be secure https:// URLs or internal paths beginning with /.");
+  if (pageSections.some((section) => !safeLink(section.config.link_url) || !safeLink(section.config.image_url) || !safeLink(section.config.image_url_2) || !safeLink(section.config.left_link) || !safeLink(section.config.right_link))) fail("Landing-page links must be secure https:// URLs or internal paths beginning with /.");
   if (pageSections.some((section) => section.type === "announcement" && String(section.config.messages ?? "").split("\n").some((line) => { const link=line.split("|").slice(1).join("|").trim(); return !safeLink(link); }))) fail("Announcement links must be secure https:// URLs or internal paths beginning with /.");
 
   const landingExperience: LandingExperience = {

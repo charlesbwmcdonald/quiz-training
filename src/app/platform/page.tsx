@@ -7,6 +7,7 @@ import CopyInviteLink from "./copy-invite-link";
 import { managePlatformInvitation, openManufacturerDashboard } from "./actions";
 import ManufacturerForm from "./manufacturer-form";
 import PlatformUserControls, { type ManagedPlatformUser } from "./platform-user-controls";
+import {JobberTrainLogo} from "@/components/jobbertrain-logo";
 
 type Manufacturer = { id: string; name: string; slug: string; status: string; logo_url: string | null; team_count: number; retailer_count: number; quiz_count: number };
 type UserRecord = ManagedPlatformUser & { created_at: string; last_sign_in_at: string | null };
@@ -29,7 +30,7 @@ export default async function PlatformPage({ searchParams }: { searchParams: Pro
   const inquiries=(inquiryRows??[]) as ContactInquiry[];
 
   return <div className="min-h-screen bg-[#f3f3f1] text-black">
-    <header className="border-b border-black/10 bg-black text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8"><Link href="/platform" className="flex items-center gap-4"><span className="text-2xl font-black uppercase tracking-[-0.05em]">Jobber<span className="text-[#ff4f1f]">Train</span></span><span className="border-l border-white/20 pl-4 text-xs font-extrabold uppercase tracking-[0.2em] text-white/60">Platform Control</span></Link><form action="/logout" method="post"><button type="submit" className="text-sm font-bold uppercase tracking-wide text-white/60 hover:text-white">Sign out</button></form></div></header>
+    <header className="border-b border-black/10 bg-black text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8"><Link href="/platform" className="flex items-center gap-4"><JobberTrainLogo className="h-8 w-auto sm:h-9" priority/><span className="hidden border-l border-white/20 pl-4 text-xs font-extrabold uppercase tracking-[0.2em] text-white/60 sm:block">Platform Control</span></Link><form action="/logout" method="post"><button type="submit" className="text-sm font-bold uppercase tracking-wide text-white/60 hover:text-white">Sign out</button></form></div></header>
     <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
       <p className="text-sm font-extrabold uppercase italic tracking-[0.2em] text-[#d93a10]">SaaS operations</p><h1 className="mt-2 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">Platform overview</h1><p className="mt-3 max-w-2xl text-black/60">Manage manufacturer customers, retailer access, users, and invitations across the entire training platform.</p>
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[["Users",dashboard.counts.users],["Manufacturers",dashboard.counts.manufacturers],["Retailers",dashboard.counts.retailers],["Pending invites",dashboard.counts.pending_invitations]].map(([label,value]) => <article key={label} className="border border-black/10 bg-white p-6 shadow-sm"><p className="text-sm font-extrabold uppercase tracking-wide text-black/45">{label}</p><p className="mt-2 text-4xl font-extrabold">{value}</p></article>)}</section>
