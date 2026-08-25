@@ -6,8 +6,8 @@ const summary = [
 ];
 
 export function MarketingTrainingPreview() {
-  return <div className="relative border border-white/15 bg-white/5 p-3 shadow-2xl backdrop-blur sm:p-4">
-    <div className="overflow-hidden bg-[#f3f3f1] text-black">
+  return <div className="marketing-preview relative rounded-lg border border-white/15 bg-white/5 p-3 shadow-2xl backdrop-blur sm:p-4">
+    <div className="overflow-hidden rounded-md bg-[#f3f3f1] text-black">
       <div className="flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
         <div><span className="block text-[8px] font-black uppercase tracking-[.18em] text-[#ff4f1f]">Gen-Y Hitch Learning</span><b className="text-[11px] uppercase">My Training</b></div>
         <span className="text-[8px] font-black uppercase tracking-[.14em] text-black/35">Learner dashboard</span>

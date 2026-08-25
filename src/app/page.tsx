@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {MarketingFooter, MarketingHeader} from "@/components/marketing-shell";
 import {MarketingTrainingPreview} from "@/components/marketing-training-preview";
+import {MarketingMotion} from "@/components/marketing-motion";
 
 const capabilities = [
   { number: "01", label: "Capture", title: "Start with what makes the product worth recommending", copy: "Organize the specifications, applications, comparisons, imagery, and selling points your team already knows." },
@@ -32,11 +33,12 @@ const brandStages = [
 ];
 
 export default function Home() {
-  return <main className="min-h-screen overflow-hidden bg-[#f4f1eb] text-[#101010]">
+  return <main className="marketing-home min-h-screen overflow-hidden bg-[#f4f1eb] text-[#101010]">
+    <MarketingMotion/>
     <MarketingHeader/>
 
-    <section className="relative isolate overflow-hidden bg-[#101010] px-5 py-20 text-white lg:px-8 lg:py-28">
-      <div className="absolute inset-0 -z-20 bg-[linear-gradient(to_right,rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.045)_1px,transparent_1px)] bg-[size:48px_48px]" />
+    <section className="marketing-hero relative isolate overflow-hidden bg-[#101010] px-5 py-14 text-white sm:py-20 lg:px-8 lg:py-28">
+      <div className="marketing-grid absolute inset-0 -z-20 bg-[linear-gradient(to_right,rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.045)_1px,transparent_1px)] bg-[size:48px_48px]" />
       <div className="absolute bottom-0 right-0 -z-10 h-40 w-2/3 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
         <div><p className="text-sm font-extrabold uppercase tracking-[0.24em] text-[#ff7048]">Product knowledge for the last mile of the sale</p><h1 className="mt-6 max-w-4xl text-5xl font-black uppercase leading-[0.9] tracking-[-0.055em] sm:text-6xl lg:text-[5.2rem]">Your product cannot sell itself at the counter.</h1><p className="mt-7 max-w-2xl text-lg leading-8 text-white/70">Manufacturers invest in engineering, inventory, marketing, distribution, and demand generation. Yet the final recommendation often comes from a retailer salesperson who may barely know the product.</p><p className="mt-4 max-w-2xl text-lg leading-8 text-white/70">JobberTrain gives your brand a dedicated product knowledge platform that turns manufacturer expertise into structured, measurable learning, helping retailer teams understand what to recommend, why it matters, and how to sell it with confidence.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/m/gen-y-hitch" className="inline-flex min-h-14 items-center bg-[#ff4f1f] px-7 font-extrabold uppercase tracking-wide text-white transition hover:bg-[#e43f13]">Explore a live academy</Link><Link href="/contact" className="inline-flex min-h-14 items-center border border-white/30 px-7 font-extrabold uppercase tracking-wide transition hover:border-white hover:bg-white hover:text-black">Discuss your strategy</Link></div></div>
