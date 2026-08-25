@@ -5,6 +5,13 @@ import { ManufacturerHeader } from "@/components/manufacturer-shell";
 import { saveTrainingAssignments } from "./actions";
 import AssignmentManager, { type AssignmentRow } from "./assignment-manager";
 import RetailerSelector from "./retailer-selector";
+import {
+  AcademyPageHeader,
+  AcademySurface,
+  StepLabel,
+  academyButton,
+  academyInput,
+} from "@/components/academy-ui";
 
 type Retailer = {
   company_id: string;
@@ -97,19 +104,12 @@ export default async function AssignmentsPage({
     <div className="min-h-screen bg-[#f4f4f2] text-black">
       <ManufacturerHeader brand={brand} email={auth.user.email} />
       <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
-        <p
-          className="text-sm font-extrabold uppercase italic tracking-[.2em]"
-          style={{ color: primary }}
-        >
-          Audience-based learning
-        </p>
-        <h1 className="mt-2 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
-          Assignments
-        </h1>
-        <p className="mt-3 max-w-3xl text-black/60">
-          Assign published training, set expectations, and manage every active
-          audience from one workspace.
-        </p>
+        <AcademyPageHeader
+          eyebrow="Audience-based learning"
+          title="Assignments"
+          description="Assign published training, set expectations, and manage every active audience from one workspace."
+          accent={primary}
+        />
         {(params.error || assignmentError) && (
           <div
             role="alert"
@@ -160,14 +160,9 @@ export default async function AssignmentsPage({
           </div>
         )}
 
-        <form action={saveTrainingAssignments} className="mt-10 grid gap-5">
-          <section className="border border-black/10 bg-white p-6 shadow-sm lg:p-8">
-            <p
-              className="text-xs font-extrabold uppercase tracking-[.16em]"
-              style={{ color: primary }}
-            >
-              Step 1
-            </p>
+        <form action={saveTrainingAssignments} className="mt-8 grid gap-5">
+          <AcademySurface className="p-6 lg:p-7">
+            <StepLabel number="01" accent={primary}>Build the assignment</StepLabel>
             <h2 className="mt-2 text-xl font-extrabold uppercase">
               Choose training
             </h2>
@@ -176,7 +171,7 @@ export default async function AssignmentsPage({
               <select
                 name="content"
                 required
-                className="min-h-12 border border-black/20 bg-white px-4 font-normal"
+                className={academyInput}
               >
                 <option value="">Select a quiz or course</option>
                 <optgroup label="Quizzes">
@@ -207,10 +202,10 @@ export default async function AssignmentsPage({
                 <input
                   name="dueDate"
                   type="date"
-                  className="h-12 border border-black/20 px-4 font-normal"
+                  className={academyInput}
                 />
               </label>
-              <label className="flex h-12 items-center gap-3 self-end border border-black/15 px-4 font-bold">
+              <label className="flex min-h-11 items-center gap-3 self-end rounded-md border border-black/15 bg-black/[.02] px-4 font-bold">
                 <input
                   name="required"
                   type="checkbox"
@@ -225,18 +220,13 @@ export default async function AssignmentsPage({
                 Publish a quiz or course before creating an assignment.
               </p>
             )}
-          </section>
-          <section className="border border-black/10 bg-white p-6 shadow-sm lg:p-8">
-            <p
-              className="text-xs font-extrabold uppercase tracking-[.16em]"
-              style={{ color: primary }}
-            >
-              Step 2
-            </p>
+          </AcademySurface>
+          <AcademySurface className="p-6 lg:p-7">
+            <StepLabel number="02" accent={primary}>Choose who receives it</StepLabel>
             <h2 className="mt-2 text-xl font-extrabold uppercase">
               Choose audience
             </h2>
-            <label className="mt-5 flex items-center justify-between gap-4 border-2 border-black p-4">
+            <label className="mt-5 flex items-center justify-between gap-4 rounded-md border border-black/15 bg-black/[.02] p-4 transition hover:border-black/35">
               <span>
                 <b className="block uppercase">Manufacturer Team</b>
                 <span className="mt-1 block text-xs text-black/45">
@@ -250,7 +240,7 @@ export default async function AssignmentsPage({
               />
             </label>
             <RetailerSelector retailers={retailers} />
-            <label className="mt-5 flex items-center justify-between gap-4 border border-black/15 bg-black/[.03] p-4">
+            <label className="mt-5 flex items-center justify-between gap-4 rounded-md border border-black/15 bg-black/[.03] p-4">
               <span>
                 <b className="block uppercase">Email learners</b>
                 <span className="mt-1 block text-xs text-black/45">
@@ -267,12 +257,12 @@ export default async function AssignmentsPage({
             </label>
             <button
               disabled={!quizzes.length && !courses.length}
-              className="mt-5 min-h-12 w-full px-6 font-extrabold uppercase text-white disabled:opacity-40"
+              className={`${academyButton.primary} mt-5 w-full disabled:translate-y-0 disabled:opacity-40`}
               style={{ backgroundColor: primary }}
             >
               Save assignment
             </button>
-          </section>
+          </AcademySurface>
         </form>
 
         <AssignmentManager

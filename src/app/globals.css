@@ -3,6 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --jt-ink: #101010;
+  --jt-canvas: #f3f3f1;
+  --jt-warm: #f4f1eb;
+  --jt-orange: #ff4f1f;
+  --jt-border: rgba(16,16,16,.11);
+  --jt-radius-sm: 6px;
+  --jt-radius-md: 8px;
+  --jt-shadow-sm: 0 1px 2px rgba(16,16,16,.05);
+  --jt-shadow-float: 0 16px 40px rgba(16,16,16,.14);
   font-variant-emoji: text;
 }
 
@@ -17,7 +26,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 button, input, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
+:where(button, summary, a[class*="min-h-"], [role="button"]) {
+  border-radius: var(--jt-radius-sm);
+}
+main :where(button, input:not([type="checkbox"]):not([type="radio"]):not([type="color"]), select, textarea) {
+  border-radius: var(--jt-radius-sm);
+}
+::selection { background: rgba(255,79,31,.22); }
+:focus-visible { outline-color: var(--jt-orange); }

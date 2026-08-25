@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { saveProduct } from "./actions";
+import { academyButton } from "@/components/academy-ui";
 
 type Spec = { id: string; label: string; value: string };
 type Option = { id: string; label: string; value: string };
@@ -81,7 +82,7 @@ export default function ProductEditor({
       />
       <input type="hidden" name="variationOptions" value={JSON.stringify(variationOptions)} />
 
-      <section className="border border-black/10 bg-white p-6 sm:p-8">
+      <section className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-extrabold uppercase">Product structure</h2>
         <p className="mt-2 text-sm leading-6 text-black/55">
           Use a family as the shared product shell, then add sellable variations beneath it.
@@ -164,7 +165,7 @@ export default function ProductEditor({
         )}
       </section>
 
-      <section className="border border-black/10 bg-white p-6 sm:p-8">
+      <section className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-extrabold uppercase">Product identity</h2>
         {mode === "variation" && <p className="mt-2 text-sm text-black/50">Variation-specific content overrides the family. Leave optional sections blank to inherit the shared family content.</p>}
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -177,7 +178,7 @@ export default function ProductEditor({
         <label className="mt-5 grid gap-2 font-bold">Product overview<textarea name="description" defaultValue={initial?.description} rows={6} className="border p-4 font-normal" /></label>
       </section>
 
-      <section className="border border-black/10 bg-white p-6 sm:p-8">
+      <section className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-extrabold uppercase">Sales knowledge</h2>
         <label className="mt-5 grid gap-2 font-bold">Image URLs <span className="text-xs font-normal text-black/45">One per line</span><textarea name="images" defaultValue={initial?.images?.map((item) => item.url).join("\n")} rows={4} className="border p-4 font-normal" /></label>
         <label className="mt-5 grid gap-2 font-bold">Features & selling points <span className="text-xs font-normal text-black/45">One per line</span><textarea name="features" defaultValue={initial?.features?.join("\n")} rows={5} className="border p-4 font-normal" /></label>
@@ -197,7 +198,7 @@ export default function ProductEditor({
         <label className="mt-5 grid gap-2 font-bold">Compatibility & fitment<textarea name="compatibility" defaultValue={initial?.compatibility} rows={4} className="border p-4 font-normal" /></label>
       </section>
 
-      <section className="border border-black/10 bg-white p-6 sm:p-8">
+      <section className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-extrabold uppercase">Media & resources</h2>
         <div className="mt-5 grid gap-5">
           <label className="grid gap-2 font-bold">Video URLs <span className="text-xs font-normal text-black/45">One per line</span><textarea name="videos" defaultValue={initial?.videos?.map((item) => item.url).join("\n")} rows={3} className="border p-4 font-normal" /></label>
@@ -207,8 +208,8 @@ export default function ProductEditor({
       </section>
 
       <div className="flex justify-end gap-3">
-        <button name="intent" value="draft" className="min-h-12 border-2 border-black px-6 font-bold uppercase">Save draft</button>
-        <button name="intent" value="published" className="min-h-12 px-6 font-extrabold uppercase text-white" style={{ backgroundColor: primary }}>Save & publish</button>
+        <button name="intent" value="draft" className={academyButton.secondary}>Save draft</button>
+        <button name="intent" value="published" className={academyButton.primary} style={{ backgroundColor: primary }}>Save & publish</button>
       </div>
     </form>
   );

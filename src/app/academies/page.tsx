@@ -4,17 +4,22 @@ import { redirect } from "next/navigation";
 import { getAcademyDirectory } from "@/lib/academies";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { switchAcademy } from "./actions";
+import { getActiveBrand } from "@/lib/branding";
+import { ManufacturerHeader } from "@/components/manufacturer-shell";
 
 export const dynamic="force-dynamic";
 
 export default async function AcademiesPage({searchParams}:{searchParams:Promise<{error?:string}>}) {
   const query=await searchParams;
   const supabase=await createSupabaseServerClient();
-  const {data:auth}=await supabase.auth.getUser();
+  const [{data:auth},activeBrand]=await Promise.all([
+    supabase.auth.getUser(),
+    getActiveBrand(),
+  ]);
   if(!auth.user) redirect("/login?next=/academies");
   const directory=await getAcademyDirectory();
   return <div className="min-h-screen bg-[#f3f3f1] text-black">
-    <header className="border-b border-white/10 bg-[#171717] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8"><Link href="/academies" className="text-2xl font-black uppercase tracking-[-.05em]">Jobber<span className="text-[#ff4f1f]">Train</span></Link><div className="flex items-center gap-5"><span className="hidden max-w-64 truncate text-sm text-white/50 sm:block">{auth.user.email}</span><form action="/logout" method="post"><button className="text-sm font-extrabold uppercase text-white/70 hover:text-white">Sign out</button></form></div></div></header>
+    {activeBrand?<ManufacturerHeader brand={activeBrand} email={auth.user.email}/>:<header className="border-b border-white/10 bg-[#171717] text-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8"><Link href="/academies" className="text-2xl font-black uppercase tracking-[-.05em]">Jobber<span className="text-[#ff4f1f]">Train</span></Link><div className="flex items-center gap-5"><span className="hidden max-w-64 truncate text-sm text-white/50 sm:block">{auth.user.email}</span><form action="/logout" method="post"><button className="text-sm font-extrabold uppercase text-white/70 hover:text-white">Sign out</button></form></div></div></header>}
     <main className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
       <p className="text-sm font-extrabold uppercase tracking-[.2em] text-[#d93a10]">Your training network</p><h1 className="mt-3 text-4xl font-black uppercase tracking-tight sm:text-6xl">My Academies</h1><p className="mt-4 max-w-2xl text-lg leading-8 text-black/55">Choose a manufacturer academy to continue learning. Your account and training history stay with you as you move between academies.</p>
       {query.error&&<div role="alert" className="mt-7 border-l-4 border-red-700 bg-red-50 p-4 font-semibold text-red-900">{query.error}</div>}

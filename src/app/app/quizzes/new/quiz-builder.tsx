@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { createQuiz } from "./actions";
 import { updateQuiz } from "../[quizId]/edit/actions";
+import { academyButton } from "@/components/academy-ui";
 
 export type Choice = { id: string; label: string; isCorrect: boolean };
 export type Question = { id: string; prompt: string; imageUrl: string; choices: Choice[] };
@@ -13,7 +14,7 @@ const blankQuestion = (): Question => ({ id: uid(), prompt: "", imageUrl: "", ch
 
 function SubmitButton({ intent, children, primaryColor }: { intent: "draft" | "published"; children: React.ReactNode; primaryColor: string }) {
   const { pending } = useFormStatus();
-  return <button name="intent" value={intent} disabled={pending} style={intent === "published" ? { backgroundColor: primaryColor } : undefined} className={intent === "published" ? "min-h-12 px-6 font-extrabold uppercase tracking-wide text-white hover:brightness-90 disabled:opacity-50" : "min-h-12 border border-black/25 bg-white px-6 font-bold uppercase tracking-wide hover:border-black disabled:opacity-50"}>{pending ? "Saving…" : children}</button>;
+  return <button name="intent" value={intent} disabled={pending} style={intent === "published" ? { backgroundColor: primaryColor } : undefined} className={`${intent === "published" ? academyButton.primary : academyButton.secondary} disabled:opacity-50`}>{pending ? "Saving…" : children}</button>;
 }
 
 export default function QuizBuilder({ error, primaryColor, initial, quizId, productImages = [] }: { error?: string; primaryColor: string; initial?: { title: string; description: string; passingScore: number; status: "draft" | "published"; questions: Question[] }; quizId?: string; productImages?: ProductImageOption[] }) {
@@ -46,7 +47,7 @@ export default function QuizBuilder({ error, primaryColor, initial, quizId, prod
       <input type="hidden" name="questions" value={JSON.stringify(questions.map(({ prompt, imageUrl, choices }) => ({ prompt, image_url: imageUrl, choices: choices.map(({ label, isCorrect }) => ({ label, isCorrect })) })))} />
       {error && <div role="alert" style={{ borderColor: primaryColor }} className="border-l-4 bg-red-50 p-4 font-semibold text-red-900"><p>{error}</p>{!quizId && <p className="mt-2 text-sm font-normal">Your question draft is stored in this browser and should be restored automatically.</p>}</div>}
       {!quizId && recoveryReady && questions.length > 1 && <div className="flex items-center justify-between gap-4 bg-blue-50 p-4 text-sm text-blue-950"><span><b>Draft recovery is on.</b> {questions.length} questions are saved in this browser.</span><button type="button" onClick={() => { window.localStorage.removeItem("jobbertrain-new-quiz-questions"); setQuestions([blankQuestion()]); }} className="font-bold uppercase underline">Clear draft</button></div>}
-      <section className="border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+      <section className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-extrabold uppercase">Quiz details</h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-[1fr_180px]">
           <label className="grid gap-2 font-bold">Quiz title<input name="title" required defaultValue={initial?.title} placeholder="Example: Executive Fifth Wheel Basics" className="min-h-12 border border-black/20 px-4 font-normal outline-none focus:border-[#d90000]" /></label>
@@ -56,7 +57,7 @@ export default function QuizBuilder({ error, primaryColor, initial, quizId, prod
       </section>
 
       {questions.map((question, questionIndex) => (
-        <section key={question.id} className="border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+        <section key={question.id} className="rounded-lg border border-black/10 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-extrabold uppercase">Question {questionIndex + 1}</h2>{questions.length > 1 && <button type="button" onClick={() => setQuestions((all) => all.filter((q) => q.id !== question.id))} style={{ color: primaryColor }} className="text-sm font-bold hover:underline">Remove question</button>}</div>
           <label className="mt-5 grid gap-2 font-bold">Question prompt<textarea value={question.prompt} onChange={(e) => updateQuestion(question.id, e.target.value)} rows={2} placeholder="Enter the question" className="border border-black/20 p-4 font-normal outline-none focus:border-[#d90000]" /></label>
           <div className="mt-4 grid gap-3">
@@ -71,7 +72,7 @@ export default function QuizBuilder({ error, primaryColor, initial, quizId, prod
         </section>
       ))}
 
-      <button type="button" onClick={() => setQuestions((all) => [...all, blankQuestion()])} className="min-h-14 border-2 border-dashed border-black/20 bg-white font-extrabold uppercase tracking-wide hover:border-black">+ Add another question</button>
+      <button type="button" onClick={() => setQuestions((all) => [...all, blankQuestion()])} className="min-h-14 rounded-lg border-2 border-dashed border-black/20 bg-white font-extrabold uppercase tracking-wide hover:border-black">+ Add another question</button>
       <div className="flex flex-col justify-end gap-3 sm:flex-row"><SubmitButton intent="draft" primaryColor={primaryColor}>{initial?.status === "published" ? "Unpublish & save" : "Save draft"}</SubmitButton><SubmitButton intent="published" primaryColor={primaryColor}>{quizId ? "Save & publish" : "Save & publish"}</SubmitButton></div>
     </form>
   );

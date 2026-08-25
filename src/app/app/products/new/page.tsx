@@ -4,6 +4,7 @@ import { ManufacturerHeader } from "@/components/manufacturer-shell";
 import { getActiveBrand } from "@/lib/branding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProductEditor from "../product-editor";
+import { AcademyPageHeader } from "@/components/academy-ui";
 
 type ProductOption = { product_id: string; name: string; is_family: boolean; parent_product_id: string | null };
 
@@ -25,8 +26,7 @@ export default async function NewProduct({ searchParams }: { searchParams: Promi
     <ManufacturerHeader brand={brand} email={auth.user.email} />
     <main className="mx-auto max-w-4xl px-5 py-10">
       <Link href={`/m/${brand.slug}/app/products`} className="font-bold text-black/50">← Products</Link>
-      <p className="mt-7 text-sm font-extrabold uppercase tracking-[.2em]" style={{ color: brand.primary_color }}>Product editor</p>
-      <h1 className="mt-2 text-4xl font-extrabold uppercase">{parent ? `Add variation to ${parent.name}` : "Add product"}</h1>
+      <div className="mt-7"><AcademyPageHeader eyebrow="Product editor" title={parent ? `Add Variation to ${parent.name}` : "Add Product"} description={parent ? "Create a selectable SKU beneath this product family and define the attributes that distinguish it." : "Create a reusable product record for academy pages, courses, and retailer training."} accent={brand.primary_color}/></div>
       {query.error && <div className="mt-5 bg-red-50 p-4 text-red-900">{query.error}</div>}
       <ProductEditor
         primary={brand.primary_color}

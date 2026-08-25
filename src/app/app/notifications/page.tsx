@@ -256,7 +256,7 @@ export default async function Page({
                 Send test email
               </button>
             </form>
-            <section className="overflow-x-auto border border-black/10 bg-white shadow-sm">
+            <section className="overflow-x-auto overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
               <div className="border-b border-black/10 p-5">
                 <h2 className="text-xl font-extrabold uppercase">
                   Recent activity
