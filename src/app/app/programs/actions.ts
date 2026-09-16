@@ -29,7 +29,7 @@ export async function saveDealerProgram(formData:FormData){
   const status=formData.get("intent")==="publish"?"active":"draft";
   const companyIds=formData.getAll("companyIds").map(String);
   const productIds=formData.getAll("productIds").map(String);
-  if(title.length<3||title.length>160)fail("Program title must be between 3 and 160 characters.");
+  if(title.length<3||title.length>160)fail("Offer title must be between 3 and 160 characters.");
   if(summary.length<10||summary.length>600)fail("Add a concise program summary between 10 and 600 characters.");
   if(details.length<10||details.length>5000)fail("Add the complete offer details before saving.");
   if(audienceMode==="selected"&&!companyIds.length)fail("Choose at least one eligible retailer.");
