@@ -5,28 +5,375 @@ import { getActiveBrand } from "@/lib/branding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redeemReward } from "./actions";
 
-type RewardItem={id:string;name:string;description:string|null;image_url:string|null;points_cost:number;inventory_quantity:number|null;per_user_limit:number|null};
-type Redemption={id:string;reward_name:string;points_cost:number;status:string;requested_at:string;tracking_number:string|null};
-type Activity={amount:number;event_type:string;description:string;created_at:string};
-type Dashboard={enabled:boolean;balance:number;lifetime_points:number;items:RewardItem[];redemptions:Redemption[];activity:Activity[]};
+type RewardItem = {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  image_urls: string[];
+  points_cost: number;
+  inventory_quantity: number | null;
+  per_user_limit: number | null;
+};
+type Redemption = {
+  id: string;
+  reward_name: string;
+  points_cost: number;
+  status: string;
+  requested_at: string;
+  tracking_number: string | null;
+};
+type Activity = {
+  amount: number;
+  event_type: string;
+  description: string;
+  created_at: string;
+};
+type Dashboard = {
+  enabled: boolean;
+  balance: number;
+  lifetime_points: number;
+  items: RewardItem[];
+  redemptions: Redemption[];
+  activity: Activity[];
+};
 
-export default async function RewardsPage({searchParams}:{searchParams:Promise<{error?:string;redeemed?:string}>}){
-  const query=await searchParams,supabase=await createSupabaseServerClient();
-  const [{data:auth},brand]=await Promise.all([supabase.auth.getUser(),getActiveBrand()]);
-  if(!auth.user)redirect("/login");
-  if(!brand)redirect("/app");
+export default async function RewardsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; redeemed?: string }>;
+}) {
+  const query = await searchParams,
+    supabase = await createSupabaseServerClient();
+  const [{ data: auth }, brand] = await Promise.all([
+    supabase.auth.getUser(),
+    getActiveBrand(),
+  ]);
+  if (!auth.user) redirect("/login");
+  if (!brand) redirect("/app");
   await supabase.rpc("sync_my_certificates");
-  const {data,error}=await supabase.rpc("rewards_learner_dashboard");
-  if(error) return <div className="min-h-screen bg-[#f4f4f2]"><ManufacturerHeader brand={brand} email={auth.user.email}/><main className="mx-auto max-w-7xl px-5 py-12"><h1 className="text-4xl font-black uppercase">My Rewards</h1><p className="mt-5 rounded-lg bg-red-50 p-5 text-red-900">{error.message}</p></main></div>;
-  const dashboard=data as Dashboard;
-  const field="min-h-11 w-full rounded-md border border-black/20 bg-white px-3";
-  return <div className="min-h-screen bg-[#f4f4f2]"><ManufacturerHeader brand={brand} email={auth.user.email}/><main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
-    <p className="text-sm font-extrabold uppercase italic tracking-[.2em]" style={{color:brand.primary_color}}>{brand.name} recognition</p><h1 className="mt-2 text-4xl font-black uppercase sm:text-5xl">My Rewards</h1><p className="mt-3 max-w-3xl text-black/60">Earn points by completing product training, then redeem them for brand merchandise and promotional items.</p>
-    {query.error&&<p className="mt-6 rounded-lg bg-red-50 p-4 text-red-900">{query.error}</p>}{query.redeemed&&<p className="mt-6 rounded-lg bg-green-50 p-4 font-semibold text-green-900">Reward requested. The {brand.name} team will review fulfillment.</p>}
-    {!dashboard.enabled?<section className="mt-8 rounded-lg border border-black/10 bg-white p-10 text-center shadow-sm"><h2 className="text-2xl font-black uppercase">Rewards are not active yet</h2><p className="mt-2 text-black/50">This academy has not enabled its points program.</p></section>:<>
-      <section className="mt-8 grid gap-4 sm:grid-cols-3"><article className="rounded-lg bg-black p-6 text-white"><span className="text-xs font-black uppercase text-white/55">Available balance</span><b className="mt-2 block text-4xl">{dashboard.balance.toLocaleString()}</b><small className="text-white/50">points ready to redeem</small></article><article className="rounded-lg border border-black/10 bg-white p-6 shadow-sm"><span className="text-xs font-black uppercase text-black/45">Lifetime earned</span><b className="mt-2 block text-4xl">{dashboard.lifetime_points.toLocaleString()}</b><small className="text-black/45">points from completed learning</small></article><article className="rounded-lg border border-black/10 bg-white p-6 shadow-sm"><span className="text-xs font-black uppercase text-black/45">Reward requests</span><b className="mt-2 block text-4xl">{dashboard.redemptions.length}</b><small className="text-black/45">across this academy</small></article></section>
-      <section className="mt-10"><div className="flex items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.16em]" style={{color:brand.primary_color}}>Rewards catalog</p><h2 className="mt-2 text-3xl font-black uppercase">Choose your reward</h2></div><span className="text-sm text-black/45">{dashboard.items.length} available</span></div><div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{dashboard.items.map(item=><article key={item.id} className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">{item.image_url?<div className="relative aspect-[16/9] bg-black/[.03]"><Image src={item.image_url} alt="" fill className="object-contain p-5" unoptimized/></div>:<div className="grid aspect-[16/9] place-items-center bg-black/[.04] text-xs font-black uppercase text-black/25">Reward image</div>}<div className="p-5"><div className="flex items-start justify-between gap-4"><h3 className="text-xl font-black uppercase">{item.name}</h3><b className="whitespace-nowrap" style={{color:brand.primary_color}}>{item.points_cost.toLocaleString()} pts</b></div><p className="mt-2 min-h-12 text-sm leading-6 text-black/55">{item.description??"A reward from the manufacturer team."}</p><details className="mt-5"><summary className="flex min-h-11 cursor-pointer list-none items-center justify-center rounded-md text-xs font-black uppercase text-white" style={{backgroundColor:dashboard.balance>=item.points_cost?brand.primary_color:"#777"}}>{dashboard.balance>=item.points_cost?"Redeem":"More points needed"}</summary>{dashboard.balance>=item.points_cost&&<form action={redeemReward} className="mt-5 grid gap-3 border-t border-black/10 pt-5"><input type="hidden" name="rewardId" value={item.id}/><p className="text-xs font-black uppercase text-black/45">Shipping details</p><input className={field} name="name" required placeholder="Full name"/><input className={field} name="email" type="email" required defaultValue={auth.user.email??""} placeholder="Email"/><input className={field} name="phone" placeholder="Phone (optional)"/><input className={field} name="address1" required placeholder="Address"/><input className={field} name="address2" placeholder="Suite / unit (optional)"/><div className="grid grid-cols-2 gap-3"><input className={field} name="city" required placeholder="City"/><input className={field} name="state" required placeholder="State"/></div><input className={field} name="postalCode" required placeholder="Postal code"/><button className="min-h-11 rounded-md bg-black px-4 text-xs font-black uppercase text-white">Confirm {item.points_cost.toLocaleString()} point redemption</button></form>}</details></div></article>)}{!dashboard.items.length&&<div className="col-span-full rounded-lg border border-black/10 bg-white p-10 text-center text-black/50">The reward catalog is being prepared.</div>}</div></section>
-      <section className="mt-10 grid gap-6 lg:grid-cols-2"><div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm"><div className="border-b border-black/10 p-5"><h2 className="text-xl font-black uppercase">Redemption history</h2></div>{dashboard.redemptions.map(r=><div key={r.id} className="grid gap-2 border-b border-black/10 p-5 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"><div><b className="uppercase">{r.reward_name}</b><p className="text-sm text-black/45">{new Date(r.requested_at).toLocaleDateString()} · {r.points_cost.toLocaleString()} points</p></div><span className="w-fit rounded-full bg-black/[.06] px-3 py-1 text-xs font-black uppercase">{r.status}</span></div>)}{!dashboard.redemptions.length&&<p className="p-8 text-center text-black/45">No redemptions yet.</p>}</div><div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm"><div className="border-b border-black/10 p-5"><h2 className="text-xl font-black uppercase">Points activity</h2></div>{dashboard.activity.map((a,i)=><div key={`${a.created_at}-${i}`} className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-black/10 p-5 last:border-0"><div><b className="text-sm uppercase">{a.description}</b><p className="text-xs text-black/40">{new Date(a.created_at).toLocaleDateString()}</p></div><b className={a.amount>0?"text-green-700":"text-black"}>{a.amount>0?"+":""}{a.amount}</b></div>)}{!dashboard.activity.length&&<p className="p-8 text-center text-black/45">Complete training to earn points.</p>}</div></section>
-    </>}
-  </main></div>;
+  const { data, error } = await supabase.rpc("rewards_learner_dashboard");
+  if (error)
+    return (
+      <div className="min-h-screen bg-[#f4f4f2]">
+        <ManufacturerHeader brand={brand} email={auth.user.email} />
+        <main className="mx-auto max-w-7xl px-5 py-12">
+          <h1 className="text-4xl font-black uppercase">My Rewards</h1>
+          <p className="mt-5 rounded-lg bg-red-50 p-5 text-red-900">
+            {error.message}
+          </p>
+        </main>
+      </div>
+    );
+  const dashboard = data as Dashboard;
+  const field =
+    "min-h-11 w-full rounded-md border border-black/20 bg-white px-3";
+  return (
+    <div className="min-h-screen bg-[#f4f4f2]">
+      <ManufacturerHeader brand={brand} email={auth.user.email} />
+      <main className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
+        <p
+          className="text-sm font-extrabold uppercase italic tracking-[.2em]"
+          style={{ color: brand.primary_color }}
+        >
+          {brand.name} recognition
+        </p>
+        <h1 className="mt-2 text-4xl font-black uppercase sm:text-5xl">
+          My Rewards
+        </h1>
+        <p className="mt-3 max-w-3xl text-black/60">
+          Earn points by completing product training, then redeem them for brand
+          merchandise and promotional items.
+        </p>
+        {query.error && (
+          <p className="mt-6 rounded-lg bg-red-50 p-4 text-red-900">
+            {query.error}
+          </p>
+        )}
+        {query.redeemed && (
+          <p className="mt-6 rounded-lg bg-green-50 p-4 font-semibold text-green-900">
+            Reward requested. The {brand.name} team will review fulfillment.
+          </p>
+        )}
+        {!dashboard.enabled ? (
+          <section className="mt-8 rounded-lg border border-black/10 bg-white p-10 text-center shadow-sm">
+            <h2 className="text-2xl font-black uppercase">
+              Rewards are not active yet
+            </h2>
+            <p className="mt-2 text-black/50">
+              This academy has not enabled its points program.
+            </p>
+          </section>
+        ) : (
+          <>
+            <section className="mt-8 grid gap-4 sm:grid-cols-3">
+              <article className="rounded-lg bg-black p-6 text-white">
+                <span className="text-xs font-black uppercase text-white/55">
+                  Available balance
+                </span>
+                <b className="mt-2 block text-4xl">
+                  {dashboard.balance.toLocaleString()}
+                </b>
+                <small className="text-white/50">points ready to redeem</small>
+              </article>
+              <article className="rounded-lg border border-black/10 bg-white p-6 shadow-sm">
+                <span className="text-xs font-black uppercase text-black/45">
+                  Lifetime earned
+                </span>
+                <b className="mt-2 block text-4xl">
+                  {dashboard.lifetime_points.toLocaleString()}
+                </b>
+                <small className="text-black/45">
+                  points from completed learning
+                </small>
+              </article>
+              <article className="rounded-lg border border-black/10 bg-white p-6 shadow-sm">
+                <span className="text-xs font-black uppercase text-black/45">
+                  Reward requests
+                </span>
+                <b className="mt-2 block text-4xl">
+                  {dashboard.redemptions.length}
+                </b>
+                <small className="text-black/45">across this academy</small>
+              </article>
+            </section>
+            <section className="mt-10">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p
+                    className="text-xs font-black uppercase tracking-[.16em]"
+                    style={{ color: brand.primary_color }}
+                  >
+                    Rewards catalog
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black uppercase">
+                    Choose your reward
+                  </h2>
+                </div>
+                <span className="text-sm text-black/45">
+                  {dashboard.items.length} available
+                </span>
+              </div>
+              <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {dashboard.items.map((item) => (
+                  <article
+                    key={item.id}
+                    className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm"
+                  >
+                    {item.image_urls?.[0] || item.image_url ? (
+                      <div className="bg-black/[.03]">
+                        <div className="relative aspect-[16/9]">
+                          <Image
+                            src={item.image_urls?.[0] || item.image_url || ""}
+                            alt={item.name}
+                            fill
+                            className="object-contain p-5"
+                            unoptimized
+                          />
+                        </div>
+                        {item.image_urls?.length > 1 && (
+                          <div className="flex gap-2 overflow-x-auto border-t border-black/10 bg-white p-3">
+                            {item.image_urls.map((imageUrl, index) => (
+                              <a
+                                key={`${imageUrl}-${index}`}
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-black/10 bg-white transition hover:border-black"
+                                aria-label={`Open ${item.name} image ${index + 1}`}
+                              >
+                                <Image
+                                  src={imageUrl}
+                                  alt=""
+                                  fill
+                                  className="object-contain p-1"
+                                  unoptimized
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid aspect-[16/9] place-items-center bg-black/[.04] text-xs font-black uppercase text-black/25">
+                        Reward image
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="text-xl font-black uppercase">
+                          {item.name}
+                        </h3>
+                        <b
+                          className="whitespace-nowrap"
+                          style={{ color: brand.primary_color }}
+                        >
+                          {item.points_cost.toLocaleString()} pts
+                        </b>
+                      </div>
+                      <p className="mt-2 min-h-12 text-sm leading-6 text-black/55">
+                        {item.description ??
+                          "A reward from the manufacturer team."}
+                      </p>
+                      <details className="mt-5">
+                        <summary
+                          className="flex min-h-11 cursor-pointer list-none items-center justify-center rounded-md text-xs font-black uppercase text-white"
+                          style={{
+                            backgroundColor:
+                              dashboard.balance >= item.points_cost
+                                ? brand.primary_color
+                                : "#777",
+                          }}
+                        >
+                          {dashboard.balance >= item.points_cost
+                            ? "Redeem"
+                            : "More points needed"}
+                        </summary>
+                        {dashboard.balance >= item.points_cost && (
+                          <form
+                            action={redeemReward}
+                            className="mt-5 grid gap-3 border-t border-black/10 pt-5"
+                          >
+                            <input
+                              type="hidden"
+                              name="rewardId"
+                              value={item.id}
+                            />
+                            <p className="text-xs font-black uppercase text-black/45">
+                              Shipping details
+                            </p>
+                            <input
+                              className={field}
+                              name="name"
+                              required
+                              placeholder="Full name"
+                            />
+                            <input
+                              className={field}
+                              name="email"
+                              type="email"
+                              required
+                              defaultValue={auth.user.email ?? ""}
+                              placeholder="Email"
+                            />
+                            <input
+                              className={field}
+                              name="phone"
+                              placeholder="Phone (optional)"
+                            />
+                            <input
+                              className={field}
+                              name="address1"
+                              required
+                              placeholder="Address"
+                            />
+                            <input
+                              className={field}
+                              name="address2"
+                              placeholder="Suite / unit (optional)"
+                            />
+                            <div className="grid grid-cols-2 gap-3">
+                              <input
+                                className={field}
+                                name="city"
+                                required
+                                placeholder="City"
+                              />
+                              <input
+                                className={field}
+                                name="state"
+                                required
+                                placeholder="State"
+                              />
+                            </div>
+                            <input
+                              className={field}
+                              name="postalCode"
+                              required
+                              placeholder="Postal code"
+                            />
+                            <button className="min-h-11 rounded-md bg-black px-4 text-xs font-black uppercase text-white">
+                              Confirm {item.points_cost.toLocaleString()} point
+                              redemption
+                            </button>
+                          </form>
+                        )}
+                      </details>
+                    </div>
+                  </article>
+                ))}
+                {!dashboard.items.length && (
+                  <div className="col-span-full rounded-lg border border-black/10 bg-white p-10 text-center text-black/50">
+                    The reward catalog is being prepared.
+                  </div>
+                )}
+              </div>
+            </section>
+            <section className="mt-10 grid gap-6 lg:grid-cols-2">
+              <div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+                <div className="border-b border-black/10 p-5">
+                  <h2 className="text-xl font-black uppercase">
+                    Redemption history
+                  </h2>
+                </div>
+                {dashboard.redemptions.map((r) => (
+                  <div
+                    key={r.id}
+                    className="grid gap-2 border-b border-black/10 p-5 last:border-0 sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div>
+                      <b className="uppercase">{r.reward_name}</b>
+                      <p className="text-sm text-black/45">
+                        {new Date(r.requested_at).toLocaleDateString()} ·{" "}
+                        {r.points_cost.toLocaleString()} points
+                      </p>
+                    </div>
+                    <span className="w-fit rounded-full bg-black/[.06] px-3 py-1 text-xs font-black uppercase">
+                      {r.status}
+                    </span>
+                  </div>
+                ))}
+                {!dashboard.redemptions.length && (
+                  <p className="p-8 text-center text-black/45">
+                    No redemptions yet.
+                  </p>
+                )}
+              </div>
+              <div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+                <div className="border-b border-black/10 p-5">
+                  <h2 className="text-xl font-black uppercase">
+                    Points activity
+                  </h2>
+                </div>
+                {dashboard.activity.map((a, i) => (
+                  <div
+                    key={`${a.created_at}-${i}`}
+                    className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-black/10 p-5 last:border-0"
+                  >
+                    <div>
+                      <b className="text-sm uppercase">{a.description}</b>
+                      <p className="text-xs text-black/40">
+                        {new Date(a.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <b
+                      className={a.amount > 0 ? "text-green-700" : "text-black"}
+                    >
+                      {a.amount > 0 ? "+" : ""}
+                      {a.amount}
+                    </b>
+                  </div>
+                ))}
+                {!dashboard.activity.length && (
+                  <p className="p-8 text-center text-black/45">
+                    Complete training to earn points.
+                  </p>
+                )}
+              </div>
+            </section>
+          </>
+        )}
+      </main>
+    </div>
+  );
 }

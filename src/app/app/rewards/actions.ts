@@ -79,6 +79,16 @@ export async function saveRewardItem(formData: FormData) {
   redirect("/app/rewards/manage?itemSaved=1");
 }
 
+export async function archiveRewardItem(formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("archive_reward_item", {
+    target_reward_id: clean(formData.get("rewardId")),
+  });
+  if (error) redirect(`/app/rewards/manage?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/app/rewards/manage");
+  redirect("/app/rewards/manage?archived=1");
+}
+
 export async function updateRedemption(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("update_reward_redemption", {
