@@ -49,8 +49,7 @@ export function AcademyDesktopMenu({ portal, primary, canManageTraining, canView
   return <div ref={root} className="relative hidden items-center gap-1 lg:flex">
     {button("learn", "Learn")}
     {(canManageTraining || canViewReports || canManageBrand) && button("manage", "Manage")}
-    {open && <div aria-hidden="true" className="fixed inset-x-0 top-[72px] z-40 h-1 bg-white" />}
-    {open === "learn" && <div id="academy-learn-menu" className="absolute right-24 top-[calc(100%+18px)] z-50 w-72 overflow-hidden rounded-b-xl border border-t-0 border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
+    {open === "learn" && <div id="academy-learn-menu" className="absolute right-24 top-[calc(100%+26px)] z-50 w-72 overflow-hidden rounded-xl border border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
       <p className="px-4 pb-2 pt-3 text-[10px] font-black uppercase tracking-[.18em] text-black/35">Learn</p>
       {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/products`} className={item}>Products</Link>}
       {canManageTraining && <Link onClick={() => setOpen(null)} href={portal} className={item}>Quizzes</Link>}
@@ -62,7 +61,7 @@ export function AcademyDesktopMenu({ portal, primary, canManageTraining, canView
       <Link onClick={() => setOpen(null)} href={`${portal}/certificates`} className={accentItem} style={{ color: primary }}>My Certificates</Link>
       <Link onClick={() => setOpen(null)} href={`${portal}/rewards`} className={accentItem} style={{ color: primary }}>My Rewards</Link>
     </div>}
-    {open === "manage" && <div id="academy-manage-menu" className="absolute right-0 top-[calc(100%+18px)] z-50 w-72 overflow-hidden rounded-b-xl border border-t-0 border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
+    {open === "manage" && <div id="academy-manage-menu" className="absolute right-0 top-[calc(100%+26px)] z-50 w-72 overflow-hidden rounded-xl border border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
       <p className="px-4 pb-2 pt-3 text-[10px] font-black uppercase tracking-[.18em] text-black/35">Manage Academy</p>
       {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/retailers`} className={item}>Retailers</Link>}
       {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/assignments`} className={item}>Assignments</Link>}
