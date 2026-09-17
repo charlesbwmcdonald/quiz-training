@@ -28,7 +28,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
   const academyHome = brand.can_manage_training ? portal : `${portal}/my-training`;
   const menuLink = "block min-w-48 rounded-md px-4 py-3 text-left text-xs font-extrabold uppercase tracking-wide text-black transition hover:bg-black/5";
   const {academies}=await getAcademyDirectory();
-  return <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 shadow-[0_1px_0_rgba(16,16,16,.04)] backdrop-blur">
+  return <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 shadow-[0_1px_0_rgba(16,16,16,.04)] backdrop-blur [&:has(details[name='academy-desktop-navigation'][open])_.academy-header-accent]:lg:opacity-0">
     <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-5 sm:px-5 sm:py-4 lg:px-8">
       <div className="flex min-w-0 items-center gap-3"><Link href={academyHome} prefetch={false} aria-label={`${brand.name} academy dashboard`} className="flex min-w-0 items-center gap-4">
         {brand.logo_url ? <Image src={brand.logo_url} alt={`${brand.name} logo`} width={170} height={40} className="max-h-9 w-auto max-w-[108px] object-contain sm:max-h-10 sm:max-w-[170px]" priority unoptimized /> : <span className="max-w-[108px] truncate text-base font-black uppercase sm:max-w-none sm:text-xl">{brand.name}</span>}
@@ -69,7 +69,7 @@ export async function ManufacturerHeader({ brand, email }: { brand: Manufacturer
       </nav>
       <AcademyMobileMenu slug={brand.slug} primary={brand.primary_color} canManageTraining={Boolean(brand.can_manage_training)} canViewReports={Boolean(brand.can_view_reports)} canManageBrand={Boolean(brand.can_manage_brand)}/>
     </div>
-    <div className="h-1" style={{ backgroundColor: brand.primary_color }} />
+    <div className="academy-header-accent h-1 transition-opacity" style={{ backgroundColor: brand.primary_color }} />
   </header>;
 }
 
