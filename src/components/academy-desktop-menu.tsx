@@ -4,74 +4,26 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 type MenuName = "learn" | "manage" | null;
-type Props = {
-  portal: string;
-  primary: string;
-  canManageTraining: boolean;
-  canViewReports: boolean;
-  canManageBrand: boolean;
-};
+type Props = { portal:string; primary:string; canManageTraining:boolean; canViewReports:boolean; canManageBrand:boolean };
+type MenuLinkProps = { href:string; title:string; description:string; accent?:boolean };
 
-export function AcademyDesktopMenu({ portal, primary, canManageTraining, canViewReports, canManageBrand }: Props) {
-  const [open, setOpen] = useState<MenuName>(null);
-  const root = useRef<HTMLDivElement>(null);
+export function AcademyDesktopMenu({portal,primary,canManageTraining,canViewReports,canManageBrand}:Props){
+  const[open,setOpen]=useState<MenuName>(null);const root=useRef<HTMLDivElement>(null);
+  useEffect(()=>{const outside=(event:MouseEvent)=>{if(root.current&&!root.current.contains(event.target as Node))setOpen(null)};const escape=(event:KeyboardEvent)=>{if(event.key==="Escape")setOpen(null)};document.addEventListener("mousedown",outside);window.addEventListener("keydown",escape);return()=>{document.removeEventListener("mousedown",outside);window.removeEventListener("keydown",escape)}},[]);
 
-  useEffect(() => {
-    const closeOutside = (event: MouseEvent) => {
-      if (root.current && !root.current.contains(event.target as Node)) setOpen(null);
-    };
-    const closeEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(null);
-    };
-    document.addEventListener("mousedown", closeOutside);
-    window.addEventListener("keydown", closeEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeOutside);
-      window.removeEventListener("keydown", closeEscape);
-    };
-  }, []);
+  const MenuLink=({href,title,description,accent=false}:MenuLinkProps)=><Link href={href} onClick={()=>setOpen(null)} className="group/link block rounded-lg px-4 py-3 transition hover:bg-black/[.045] focus-visible:outline-2 focus-visible:outline-black"><span className="flex items-center justify-between gap-3 text-sm font-black uppercase tracking-[.04em]" style={accent?{color:primary}:undefined}>{title}<span aria-hidden="true" className="translate-x-0 text-black/20 transition group-hover/link:translate-x-1 group-hover/link:text-black/55">→</span></span><span className="mt-1 block text-xs leading-5 text-black/45">{description}</span></Link>;
+  const button=(name:Exclude<MenuName,null>,label:string)=><button type="button" aria-expanded={open===name} aria-controls={`academy-${name}-menu`} onClick={()=>setOpen(current=>current===name?null:name)} className={`relative flex min-h-10 items-center gap-2 rounded-md px-4 text-xs font-black uppercase tracking-[.06em] transition focus-visible:outline-2 focus-visible:outline-black ${open===name?"bg-black/[.055] text-black":"text-black hover:bg-black/5"}`}>{label}<span aria-hidden="true" className={`text-[9px] transition-transform ${open===name?"rotate-180":""}`}>▼</span>{open===name&&<span className="absolute inset-x-3 -bottom-[18px] h-1" style={{backgroundColor:primary}}/>}</button>;
 
-  const item = "flex min-h-11 items-center rounded-md px-4 text-xs font-black uppercase tracking-[.06em] text-black/65 transition hover:bg-black/[.055] hover:text-black focus-visible:outline-2 focus-visible:outline-black";
-  const accentItem = `${item} font-black`;
-  const button = (name: Exclude<MenuName, null>, label: string) => (
-    <button
-      type="button"
-      aria-expanded={open === name}
-      aria-controls={`academy-${name}-menu`}
-      onClick={() => setOpen(current => current === name ? null : name)}
-      className={`flex min-h-10 items-center gap-2 rounded-md px-4 text-xs font-black uppercase tracking-[.06em] transition focus-visible:outline-2 focus-visible:outline-black ${open === name ? "bg-black text-white" : "text-black hover:bg-black/5"}`}
-    >
-      {label}
-      <span aria-hidden="true" className={`text-[9px] transition-transform ${open === name ? "rotate-180" : ""}`}>▼</span>
-    </button>
-  );
-
-  return <div ref={root} className="relative hidden items-center gap-1 lg:flex">
-    {button("learn", "Learn")}
-    {(canManageTraining || canViewReports || canManageBrand) && button("manage", "Manage")}
-    {open === "learn" && <div id="academy-learn-menu" className="absolute right-24 top-[calc(100%+26px)] z-50 w-72 overflow-hidden rounded-xl border border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
-      <p className="px-4 pb-2 pt-3 text-[10px] font-black uppercase tracking-[.18em] text-black/35">Learn</p>
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/products`} className={item}>Products</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={portal} className={item}>Quizzes</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/courses`} className={item}>Courses</Link>}
-      <Link onClick={() => setOpen(null)} href={`${portal}/dealer-programs`} className={item}>Dealer Offers</Link>
-      <div className="my-2 border-t border-black/10" />
-      <Link onClick={() => setOpen(null)} href={`${portal}/my-training`} className={accentItem} style={{ color: primary }}>My Training</Link>
-      <Link onClick={() => setOpen(null)} href="/academies" className={accentItem} style={{ color: primary }}>My Academies</Link>
-      <Link onClick={() => setOpen(null)} href={`${portal}/certificates`} className={accentItem} style={{ color: primary }}>My Certificates</Link>
-      <Link onClick={() => setOpen(null)} href={`${portal}/rewards`} className={accentItem} style={{ color: primary }}>My Rewards</Link>
-    </div>}
-    {open === "manage" && <div id="academy-manage-menu" className="absolute right-0 top-[calc(100%+26px)] z-50 w-72 overflow-hidden rounded-xl border border-black/10 bg-white p-2 shadow-[0_22px_55px_rgba(16,16,16,.16)]">
-      <p className="px-4 pb-2 pt-3 text-[10px] font-black uppercase tracking-[.18em] text-black/35">Manage Academy</p>
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/retailers`} className={item}>Retailers</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/assignments`} className={item}>Assignments</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/certifications`} className={item}>Certifications</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/programs`} className={item}>Manage Offers</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/notifications`} className={item}>Notifications</Link>}
-      {canManageTraining && <Link onClick={() => setOpen(null)} href={`${portal}/rewards/manage`} className={item}>Rewards</Link>}
-      {canViewReports && <Link onClick={() => setOpen(null)} href={`${portal}/reports`} className={item}>Reports</Link>}
-      {canManageBrand && <Link onClick={() => setOpen(null)} href={`${portal}/users`} className={item}>Users</Link>}
-      {canManageBrand && <div className="mt-2 border-t border-black/10 pt-2"><Link onClick={() => setOpen(null)} href={`${portal}/settings/branding`} className={accentItem} style={{ color: primary }}>Brand Studio</Link></div>}
-    </div>}
+  return <div ref={root} className="relative hidden items-center gap-1 lg:flex">{button("learn","Learn")}{(canManageTraining||canViewReports||canManageBrand)&&button("manage","Manage")}
+    {open==="learn"&&<div id="academy-learn-menu" className="fixed inset-x-0 top-[76px] z-50 border-b border-black/10 bg-white shadow-[0_18px_40px_rgba(16,16,16,.11)]"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-8 px-8 py-8">
+      <section><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">Build Product Knowledge</p>{canManageTraining&&<MenuLink href={`${portal}/products`} title="Products" description="Create the trusted source for product details, variations, and selling points."/>}{canManageTraining&&<MenuLink href={portal} title="Quizzes" description="Build knowledge checks that reinforce the information that matters."/>}{canManageTraining&&<MenuLink href={`${portal}/courses`} title="Courses" description="Combine products, media, lessons, and quizzes into learning paths."/>}</section>
+      <section className="border-l border-black/10 pl-8"><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">Dealer Enablement</p><MenuLink href={`${portal}/dealer-programs`} title="Dealer Offers" description="Share private stocking, display, bundle, and promotional opportunities."/></section>
+      <section className="border-l border-black/10 pl-8"><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">My Academy</p><MenuLink href={`${portal}/my-training`} title="My Training" description="Continue assigned courses and quizzes." accent/><MenuLink href="/academies" title="My Academies" description="Move between the manufacturer academies you can access." accent/><MenuLink href={`${portal}/certificates`} title="My Certificates" description="View and download earned credentials." accent/><MenuLink href={`${portal}/rewards`} title="My Rewards" description="Track points and redeem available rewards." accent/></section>
+    </div></div>}
+    {open==="manage"&&<div id="academy-manage-menu" className="fixed inset-x-0 top-[76px] z-50 border-b border-black/10 bg-white shadow-[0_18px_40px_rgba(16,16,16,.11)]"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-8 px-8 py-8">
+      <section><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">Dealer Network</p>{canManageTraining&&<MenuLink href={`${portal}/retailers`} title="Retailers" description="Manage dealer locations, contact information, and academy access."/>}{canManageTraining&&<MenuLink href={`${portal}/assignments`} title="Assignments" description="Deliver training to manufacturer teams or selected retailer audiences."/>}</section>
+      <section className="border-l border-black/10 pl-8"><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">Programs & Communication</p>{canManageTraining&&<MenuLink href={`${portal}/certifications`} title="Certifications" description="Define requirements and track certified dealer status."/>}{canManageTraining&&<MenuLink href={`${portal}/programs`} title="Manage Offers" description="Create and target private dealer opportunities."/>}{canManageTraining&&<MenuLink href={`${portal}/rewards/manage`} title="Rewards" description="Configure points, catalog items, and fulfillment."/>}{canManageTraining&&<MenuLink href={`${portal}/notifications`} title="Notifications" description="Control learner reminders and manager updates."/>}</section>
+      <section className="border-l border-black/10 pl-8"><p className="mb-3 px-4 text-[10px] font-black uppercase tracking-[.2em] text-black/35">Insights & Administration</p>{canViewReports&&<MenuLink href={`${portal}/reports`} title="Reports" description="Measure participation, progress, completion, and performance."/>}{canManageBrand&&<MenuLink href={`${portal}/users`} title="Users" description="Invite people and manage manufacturer or retailer access."/>}{canManageBrand&&<MenuLink href={`${portal}/settings/branding`} title="Brand Studio" description="Control the academy identity and landing-page experience." accent/>}</section>
+    </div></div>}
   </div>;
 }
