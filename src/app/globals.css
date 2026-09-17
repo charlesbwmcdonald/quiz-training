@@ -308,3 +308,7 @@ main :where(button, input:not([type="checkbox"]):not([type="radio"]):not([type="
 }
 ::selection { background: rgba(255,79,31,.22); }
 :focus-visible { outline-color: var(--jt-orange); }
+
+#for-industry > div > div:first-child > .absolute.rounded-full {
+  display: none;
+}
