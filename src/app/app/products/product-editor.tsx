@@ -95,13 +95,13 @@ export default function ProductEditor({
           ] as const).map(([value, label, description]) => (
             <label
               key={value}
-              className={`cursor-pointer border-2 p-4 ${mode === value ? "border-black bg-black text-white" : "border-black/10"}`}
+              className={`cursor-pointer rounded-md border p-4 transition ${mode === value ? "border-black/15 bg-black/[.055] text-black shadow-sm" : "border-black/10 bg-white hover:border-black/25 hover:bg-black/[.025]"}`}
             >
               <span className="flex items-center gap-2 font-extrabold uppercase">
                 <input type="radio" checked={mode === value} onChange={() => setMode(value)} />
                 {label}
               </span>
-              <span className={`mt-2 block text-xs leading-5 ${mode === value ? "text-white/65" : "text-black/50"}`}>
+              <span className="mt-2 block text-xs leading-5 text-black/50">
                 {description}
               </span>
             </label>
@@ -209,6 +209,7 @@ export default function ProductEditor({
 
       <div className="flex justify-end gap-3">
         <button name="intent" value="draft" className={academyButton.secondary}>Save draft</button>
+        <button name="intent" value="review" className={academyButton.secondary}>Send for review</button>
         <button name="intent" value="published" className={academyButton.primary} style={{ backgroundColor: primary }}>Save & publish</button>
       </div>
     </form>

@@ -19,12 +19,13 @@ export async function saveProduct(formData: FormData) {
   const mode = String(formData.get("productMode") ?? "standalone");
   const parentId = mode === "variation" ? String(formData.get("parentProductId") ?? "") : "";
   const variationLabel = mode === "variation" ? String(formData.get("variationLabel") ?? "").trim() : "";
+  const intent = ["draft", "review", "published"].includes(String(formData.get("intent"))) ? String(formData.get("intent")) : "draft";
 
   if (!name || !slug) redirect("/app/products/new?error=Product+name+and+URL+slug+are+required.");
   if (mode === "variation" && (!parentId || !variationLabel)) redirect("/app/products/new?error=Choose+a+product+family+and+name+the+variation.");
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("save_manufacturer_product_v2", {
+  const { data, error } = await supabase.rpc("save_manufacturer_product_v2", {
     target_id: String(formData.get("productId") ?? "") || null,
     product_name: name,
     product_slug: slug,
@@ -39,7 +40,7 @@ export async function saveProduct(formData: FormData) {
     videos: lines(formData.get("videos")).map((url) => ({ url })),
     downloads: lines(formData.get("downloads")).map((url) => ({ url })),
     product_url: String(formData.get("productUrl") ?? ""),
-    product_status: formData.get("intent") === "published" ? "published" : "draft",
+    product_status: intent === "published" ? "published" : "draft",
     product_is_family: mode === "family",
     product_parent_id: parentId || null,
     product_variation_label: variationLabel || null,
@@ -47,6 +48,10 @@ export async function saveProduct(formData: FormData) {
   });
 
   if (error) redirect(`/app/products/new?error=${encodeURIComponent(error.message)}`);
+  if (intent === "review") {
+    const { error: workflowError } = await supabase.rpc("set_content_workflow_status", { content_type: "product", target_content_id: data, next_status: "review" });
+    if (workflowError) redirect(`/app/products?error=${encodeURIComponent(workflowError.message)}`);
+  }
   redirect("/app/products?saved=1");
 }
 

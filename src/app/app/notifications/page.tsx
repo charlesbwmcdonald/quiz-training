@@ -20,6 +20,7 @@ type Delivery = {
   recipient: string;
   subject: string;
   status: string;
+  error: string | null;
   created_at: string;
 };
 export default async function Page({
@@ -38,6 +39,7 @@ export default async function Page({
   if (!brand?.can_manage_training) redirect("/app");
   const d = data as { settings: Settings; deliveries: Delivery[] },
     x = d.settings,
+    failed = d.deliveries.filter((delivery) => delivery.status === "failed"),
     input = "min-h-11 border border-black/20 px-3";
   const toggle = (
     name: string,
@@ -114,7 +116,7 @@ export default async function Page({
           </p>
         )}
         <section className="mt-8 grid gap-4 sm:grid-cols-3">
-          <article className="border border-black/10 bg-white p-5 shadow-sm">
+          <article className={`border bg-white p-5 shadow-sm ${failed.length?"border-red-300":"border-black/10"}`}>
             <span className="text-xs font-extrabold uppercase text-black/45">
               Enabled rules
             </span>
@@ -136,8 +138,8 @@ export default async function Page({
             <span className="text-xs font-extrabold uppercase text-black/45">
               Recent deliveries
             </span>
-            <b className="mt-2 block text-4xl">{d.deliveries.length}</b>
-            <p className="mt-1 text-sm text-black/45">Latest 25 retained</p>
+            <b className="mt-2 block text-4xl">{failed.length}</b>
+            <p className="mt-1 text-sm text-black/45">Failed in latest 25 deliveries</p>
           </article>
           <article
             className="p-5 text-white shadow-sm"
@@ -262,17 +264,18 @@ export default async function Page({
                   Recent activity
                 </h2>
               </div>
-              <div className="hidden min-w-[900px] grid-cols-[120px_minmax(180px,1fr)_minmax(240px,1.4fr)_100px_150px] gap-5 border-b border-black/10 bg-black/[.03] px-5 py-4 text-xs font-extrabold uppercase tracking-wide text-black/45 lg:grid">
+              <div className="hidden min-w-[1050px] grid-cols-[120px_minmax(180px,1fr)_minmax(220px,1.2fr)_100px_minmax(180px,1fr)_150px] gap-5 border-b border-black/10 bg-black/[.03] px-5 py-4 text-xs font-extrabold uppercase tracking-wide text-black/45 lg:grid">
                 <span>Type</span>
                 <span>Recipient</span>
                 <span>Subject</span>
                 <span>Status</span>
+                <span>Diagnostic</span>
                 <span>Sent</span>
               </div>
               {d.deliveries.map((v) => (
                 <div
                   key={v.id}
-                  className="grid min-h-20 min-w-[900px] grid-cols-[120px_minmax(180px,1fr)_minmax(240px,1.4fr)_100px_150px] items-center gap-5 border-b border-black/10 px-5 py-4 last:border-0"
+                  className="grid min-h-20 min-w-[1050px] grid-cols-[120px_minmax(180px,1fr)_minmax(220px,1.2fr)_100px_minmax(180px,1fr)_150px] items-center gap-5 border-b border-black/10 px-5 py-4 last:border-0"
                 >
                   <b className="text-sm uppercase">
                     {v.notification_type.replaceAll("_", " ")}
@@ -288,6 +291,7 @@ export default async function Page({
                   >
                     {v.status}
                   </span>
+                  <p className={`truncate text-xs ${v.error?"font-semibold text-red-700":"text-black/35"}`} title={v.error??undefined}>{v.error||"No provider error"}</p>
                   <p className="text-sm text-black/45">
                     {new Intl.DateTimeFormat("en-US", {
                       dateStyle: "medium",

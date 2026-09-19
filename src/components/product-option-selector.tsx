@@ -39,10 +39,10 @@ export function ProductOptionSelector({
           key={variation.id}
           type="button"
           onClick={() => onSelect(variation.id ?? "")}
-          className={`${compact ? "min-w-40 px-4 py-3 text-sm" : "min-w-52 p-4"} border-2 text-left font-bold transition ${active ? "border-black bg-black text-white" : "border-black/15 hover:border-black"}`}
+          className={`${compact ? "min-w-40 px-4 py-3 text-sm" : "min-w-52 p-4"} rounded-md border text-left font-bold transition ${active ? "border-black/15 bg-black/[.055] text-black shadow-sm" : "border-black/15 bg-white hover:border-black/30 hover:bg-black/[.025]"}`}
         >
           <span className="block uppercase">{variation.variation_label || variation.name}</span>
-          {variation.model_sku && <span className={`mt-1 block text-xs ${active ? "text-white/55" : "text-black/45"}`}>{variation.model_sku}</span>}
+          {variation.model_sku && <span className="mt-1 block text-xs text-black/45">{variation.model_sku}</span>}
         </button>;
       })}
     </div>;
@@ -75,12 +75,12 @@ export function ProductOptionSelector({
                 );
                 if (match?.id) onSelect(match.id);
               }}
-              className={`relative min-h-11 overflow-hidden border-2 px-4 py-2 text-sm font-extrabold transition ${
+              className={`relative min-h-11 overflow-hidden rounded-md border px-4 py-2 text-sm font-extrabold transition ${
                 !available
                   ? "cursor-not-allowed border-black/10 bg-black/[.025] text-black/25 after:absolute after:left-[-8%] after:top-1/2 after:h-px after:w-[116%] after:-rotate-12 after:bg-black/35 after:content-['']"
                   : active
-                    ? "border-black bg-black text-white"
-                    : "border-black/20 bg-white hover:border-black"
+                    ? "border-black/15 bg-black/[.055] text-black shadow-sm"
+                    : "border-black/15 bg-white hover:border-black/30 hover:bg-black/[.025]"
               }`}
             >
               {value}

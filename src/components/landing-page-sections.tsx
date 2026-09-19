@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Brand-builder sections render tenant-provided images from arbitrary remote hosts. */
 import Image from "next/image";
 import Link from "next/link";
 import type { LandingSection, ManufacturerBrand, PublicLandingExperience } from "@/lib/branding";

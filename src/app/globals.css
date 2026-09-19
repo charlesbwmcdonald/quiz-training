@@ -298,7 +298,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-button, input, textarea { font: inherit; }
+button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 :where(button, summary, a[class*="min-h-"], [role="button"]) {
   border-radius: var(--jt-radius-sm);
@@ -307,8 +307,191 @@ main :where(button, input:not([type="checkbox"]):not([type="radio"]):not([type="
   border-radius: var(--jt-radius-sm);
 }
 ::selection { background: rgba(255,79,31,.22); }
-:focus-visible { outline-color: var(--jt-orange); }
+:focus-visible {
+  outline: 3px solid var(--jt-orange) !important;
+  outline-offset: 3px;
+}
+
+.jt-skip-link {
+  position: fixed;
+  top: .75rem;
+  left: .75rem;
+  z-index: 9999;
+  transform: translateY(-180%);
+  border-radius: var(--jt-radius-sm);
+  background: #101010;
+  color: white;
+  padding: .8rem 1rem;
+  font-size: .75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  transition: transform 120ms ease;
+}
+.jt-skip-link:focus { transform: translateY(0); }
+
+/* Formerly decorative metadata must remain readable on white and black surfaces. */
+.text-black\/35 { color: rgb(0 0 0 / .52) !important; }
+.text-black\/40 { color: rgb(0 0 0 / .56) !important; }
+.text-white\/35 { color: rgb(255 255 255 / .64) !important; }
+.text-white\/40 { color: rgb(255 255 255 / .68) !important; }
+
+[class*="overflow-x-auto"] {
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (pointer: coarse) {
+  :where(button, summary, a[href], input:not([type="hidden"]), select) { min-height: 44px; }
+  :where(input[type="checkbox"], input[type="radio"]) { min-width: 22px; min-height: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
 
 #for-industry > div > div:first-child > .absolute.rounded-full {
   display: none;
+}
+
+/* Academy control hierarchy: brand color is primary; neutral surfaces are utility. */
+.academy-control-trigger {
+  border: 1px solid rgb(0 0 0 / .15);
+  border-radius: var(--jt-radius-sm);
+  background: #fff;
+  color: var(--jt-ink);
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+.academy-control-trigger:hover,
+details[open] > .academy-control-trigger {
+  border-color: rgb(0 0 0 / .18);
+  background: rgb(0 0 0 / .055);
+  box-shadow: var(--jt-shadow-sm);
+  color: var(--jt-ink);
+}
+.academy-filter-button {
+  border: 1px solid rgb(0 0 0 / .15);
+  border-radius: var(--jt-radius-sm);
+  background: rgb(0 0 0 / .055);
+  color: var(--jt-ink);
+  box-shadow: var(--jt-shadow-sm);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.academy-filter-button:hover {
+  border-color: rgb(0 0 0 / .28);
+  background: rgb(0 0 0 / .08);
+}
+.academy-table-header {
+  background: rgb(0 0 0 / .03);
+  color: rgb(0 0 0 / .52);
+}
+
+/* Legacy outlined utility controls inherit the same lighter interaction model. */
+main :is(button, a, summary).border-2.border-black:not(.text-white) {
+  border-width: 1px;
+  border-color: rgb(0 0 0 / .15);
+  background: #fff;
+  color: var(--jt-ink);
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+main :is(button, a, summary).border-2.border-black:not(.text-white):hover,
+main details[open] > summary.border-2.border-black:not(.text-white) {
+  border-color: rgb(0 0 0 / .18);
+  background: rgb(0 0 0 / .055);
+  box-shadow: var(--jt-shadow-sm);
+  color: var(--jt-ink);
+}
+
+/* Keep brand-colored primary actions visually consistent across academy pages. */
+main :is(a, button).text-white[style*="background-color"] {
+  border-radius: var(--jt-radius-sm);
+  box-shadow: var(--jt-shadow-sm);
+  transition: filter 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+main :is(a, button).text-white[style*="background-color"]:hover {
+  filter: brightness(.94);
+}
+
+/* Normalize older form controls without changing checkboxes, radios, or range inputs. */
+main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  border-radius: var(--jt-radius-sm);
+}
+
+main fieldset,
+main [class*="border-dashed"] {
+  border-radius: var(--jt-radius-md);
+}
+
+main details > div.absolute.border {
+  border-radius: var(--jt-radius-md);
+  overflow: hidden;
+}
+
+/* Preserve horizontal access for dense admin tables that also clip dropdown edges. */
+main section.overflow-x-auto.overflow-hidden {
+  overflow-x: auto !important;
+  overflow-y: visible;
+}
+
+@media (max-width: 767px) {
+  main section.overflow-x-auto::before,
+  main div.overflow-x-auto:has(> table)::before,
+  main div.overflow-x-auto:has(> div[class*="min-w-"])::before {
+    content: "Swipe to view all columns \2192";
+    position: sticky;
+    left: 0;
+    display: block;
+    width: fit-content;
+    margin: .75rem 1rem .25rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / .055);
+    padding: .4rem .7rem;
+    color: rgb(0 0 0 / .58);
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+}
+
+main div.overflow-x-auto:has(> div[class*="min-w-"]) {
+  overflow-y: visible;
+}
+
+/* Clear feedback for disabled and submitting controls. */
+main :is(button, input[type="submit"]):disabled {
+  cursor: not-allowed;
+  filter: saturate(.6);
+}
+
+main :is(button, summary, a[href], input, select, textarea) {
+  scroll-margin-top: 7rem;
+}
+
+/* Shared treatment available to all current and future empty states. */
+.jt-empty-state {
+  display: grid;
+  min-height: 14rem;
+  place-items: center;
+  border: 1px dashed rgb(0 0 0 / .14);
+  border-radius: var(--jt-radius-md);
+  background: rgb(255 255 255 / .72);
+  padding: 2rem;
+  text-align: center;
+  color: rgb(0 0 0 / .56);
+}
+
+/* Bring legacy table empty states into the same quiet, intentional pattern. */
+main :is(p.p-8.text-center, p.p-10.text-center, p.p-12.text-center) {
+  min-height: 10rem;
+  align-content: center;
+  background: rgb(0 0 0 / .012);
+  color: rgb(0 0 0 / .56);
 }

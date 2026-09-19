@@ -59,6 +59,26 @@ export async function openManufacturerDashboard(formData: FormData) {
   redirect(`/m/${slug}/app`);
 }
 
+export async function updateManufacturerOperations(formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const manufacturerId = String(formData.get("manufacturerId") ?? "");
+  const nullable = (name: string) => String(formData.get(name) ?? "").trim() || null;
+  const { error } = await supabase.rpc("update_platform_manufacturer_operations", {
+    target_manufacturer_id: manufacturerId,
+    next_lifecycle_status: String(formData.get("lifecycleStatus") ?? "trial"),
+    next_service_tier: String(formData.get("serviceTier") ?? "self_managed"),
+    next_onboarding_stage: String(formData.get("onboardingStage") ?? "setup"),
+    next_launch_date: nullable("launchDate"),
+    next_account_owner: nullable("accountOwner"),
+    next_action: nullable("nextAction"),
+    next_follow_up_date: nullable("followUpDate"),
+    next_support_notes: nullable("supportNotes"),
+  });
+  if (error) redirect(`/platform?manufacturerError=${encodeURIComponent(error.message)}#manufacturer-directory`);
+  revalidatePath("/platform");
+  redirect("/platform?accountUpdated=1#manufacturer-directory");
+}
+
 export async function managePlatformUser(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("manage_platform_user", {

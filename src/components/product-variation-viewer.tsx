@@ -55,7 +55,7 @@ export function ProductVariationViewer({ parent, variations, primary }: { parent
     <section className="bg-[#f4f4f2] px-5 py-10 sm:py-12">
       <div className="mx-auto max-w-7xl">
         <p className="text-sm font-extrabold uppercase tracking-[.2em]" style={{ color: primary }}>{product.category_name || "Product"}</p>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-4"><h1 className="text-4xl font-extrabold uppercase sm:text-5xl">{product.name}</h1>{product.model_sku && <span className="bg-black px-3 py-2 text-xs font-extrabold uppercase text-white">SKU {product.model_sku}</span>}</div>
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-4"><h1 className="text-4xl font-extrabold uppercase sm:text-5xl">{product.name}</h1>{product.model_sku && <span className="rounded-full border border-black/10 bg-black/[.055] px-3 py-2 text-xs font-extrabold uppercase text-black/60">SKU {product.model_sku}</span>}</div>
         {variation?.variation_label && <p className="mt-3 text-lg font-bold uppercase" style={{ color: primary }}>{variation.variation_label}</p>}
         {product.tagline && <p className="mt-4 max-w-3xl text-xl text-black/60">{product.tagline}</p>}
       </div>

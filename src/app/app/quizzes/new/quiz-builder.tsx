@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Quiz authors preview arbitrary external image URLs and browser-local sources. */
 
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -12,24 +13,29 @@ export type ProductImageOption = { productId: string; name: string; imageUrl: st
 const uid = () => Math.random().toString(36).slice(2);
 const blankQuestion = (): Question => ({ id: uid(), prompt: "", imageUrl: "", choices: [{ id: uid(), label: "", isCorrect: true }, { id: uid(), label: "", isCorrect: false }] });
 
-function SubmitButton({ intent, children, primaryColor }: { intent: "draft" | "published"; children: React.ReactNode; primaryColor: string }) {
+function SubmitButton({ intent, children, primaryColor }: { intent: "draft" | "review" | "published"; children: React.ReactNode; primaryColor: string }) {
   const { pending } = useFormStatus();
   return <button name="intent" value={intent} disabled={pending} style={intent === "published" ? { backgroundColor: primaryColor } : undefined} className={`${intent === "published" ? academyButton.primary : academyButton.secondary} disabled:opacity-50`}>{pending ? "Saving…" : children}</button>;
 }
 
-export default function QuizBuilder({ error, primaryColor, initial, quizId, productImages = [] }: { error?: string; primaryColor: string; initial?: { title: string; description: string; passingScore: number; status: "draft" | "published"; questions: Question[] }; quizId?: string; productImages?: ProductImageOption[] }) {
+export default function QuizBuilder({ error, primaryColor, initial, quizId, productImages = [] }: { error?: string; primaryColor: string; initial?: { title: string; description: string; passingScore: number; status: "draft" | "review" | "published"; questions: Question[] }; quizId?: string; productImages?: ProductImageOption[] }) {
   const [questions, setQuestions] = useState<Question[]>(initial?.questions?.length ? initial.questions : [blankQuestion()]);
   const [recoveryReady, setRecoveryReady] = useState(Boolean(quizId));
   useEffect(() => {
     if (quizId) return;
+    let recovered: Question[] | null = null;
     try {
       const saved = window.localStorage.getItem("jobbertrain-new-quiz-questions");
       if (saved) {
-        const recovered = JSON.parse(saved) as Question[];
-        if (Array.isArray(recovered) && recovered.length) setQuestions(recovered);
+        const parsed = JSON.parse(saved) as Question[];
+        if (Array.isArray(parsed) && parsed.length) recovered = parsed;
       }
     } catch {}
-    setRecoveryReady(true);
+    const timer = window.setTimeout(() => {
+      if (recovered) setQuestions(recovered);
+      setRecoveryReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [quizId]);
   useEffect(() => {
     if (!quizId && recoveryReady) window.localStorage.setItem("jobbertrain-new-quiz-questions", JSON.stringify(questions));
@@ -73,7 +79,7 @@ export default function QuizBuilder({ error, primaryColor, initial, quizId, prod
       ))}
 
       <button type="button" onClick={() => setQuestions((all) => [...all, blankQuestion()])} className="min-h-14 rounded-lg border-2 border-dashed border-black/20 bg-white font-extrabold uppercase tracking-wide hover:border-black">+ Add another question</button>
-      <div className="flex flex-col justify-end gap-3 sm:flex-row"><SubmitButton intent="draft" primaryColor={primaryColor}>{initial?.status === "published" ? "Unpublish & save" : "Save draft"}</SubmitButton><SubmitButton intent="published" primaryColor={primaryColor}>{quizId ? "Save & publish" : "Save & publish"}</SubmitButton></div>
+      <div className="flex flex-col justify-end gap-3 sm:flex-row"><SubmitButton intent="draft" primaryColor={primaryColor}>{initial?.status === "published" ? "Move to draft" : "Save draft"}</SubmitButton><SubmitButton intent="review" primaryColor={primaryColor}>Send for review</SubmitButton><SubmitButton intent="published" primaryColor={primaryColor}>Save & publish</SubmitButton></div>
     </form>
   );
 }

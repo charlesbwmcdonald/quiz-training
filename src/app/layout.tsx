@@ -14,7 +14,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <a href="#main-content" className="jt-skip-link">Skip to main content</a>
+        <div id="main-content">{children}</div>
       </body>
     </html>
   );

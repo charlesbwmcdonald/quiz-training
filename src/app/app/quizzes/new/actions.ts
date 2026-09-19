@@ -11,7 +11,7 @@ export async function createQuiz(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const passingScore = Number(formData.get("passingScore") ?? 80);
   const questionsJson = String(formData.get("questions") ?? "[]");
-  const intent = formData.get("intent") === "published" ? "published" : "draft";
+  const intent = ["draft", "review", "published"].includes(String(formData.get("intent"))) ? String(formData.get("intent")) : "draft";
   let questions: QuestionInput[] = [];
 
   try { questions = JSON.parse(questionsJson); } catch { redirect("/app/quizzes/new?error=The+quiz+questions+could+not+be+read."); }
@@ -30,13 +30,17 @@ export async function createQuiz(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) redirect("/login");
-  const { error } = await supabase.rpc("create_quiz_with_questions", {
+  const { data, error } = await supabase.rpc("create_quiz_with_questions", {
     quiz_title: title,
     quiz_description: description || null,
     quiz_passing_score: passingScore,
-    quiz_status: intent,
+    quiz_status: intent === "published" ? "published" : "draft",
     questions: normalized,
   });
   if (error) redirect(`/app/quizzes/new?error=${encodeURIComponent(error.message)}`);
+  if (intent === "review") {
+    const { error: workflowError } = await supabase.rpc("set_content_workflow_status", { content_type: "quiz", target_content_id: data, next_status: "review" });
+    if (workflowError) redirect(`/app/quizzes/new?error=${encodeURIComponent(workflowError.message)}`);
+  }
   redirect("/app?created=1");
 }

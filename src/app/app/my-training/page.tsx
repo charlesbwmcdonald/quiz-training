@@ -55,6 +55,8 @@ export default async function MyTrainingPage({ searchParams }:{ searchParams:Pro
   if (!auth.user) redirect("/login");
   if (!brand) redirect("/app");
 
+  // Server components execute once per request, so one timestamp consistently classifies all due dates.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const items:TrainingItem[] = [];
   for (const course of (internalCourseRows ?? []) as InternalCourse[]) {

@@ -11,7 +11,7 @@ export async function updateQuiz(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const passingScore = Number(formData.get("passingScore") ?? 80);
-  const intent = formData.get("intent") === "published" ? "published" : "draft";
+  const intent = ["draft", "review", "published"].includes(String(formData.get("intent"))) ? String(formData.get("intent")) : "draft";
   const fail = (message: string): never => redirect(`/app/quizzes/${quizId}/edit?error=${encodeURIComponent(message)}`);
   let questions: QuestionInput[];
   try { questions = JSON.parse(String(formData.get("questions") ?? "[]")); } catch { fail("The quiz questions could not be read."); }
@@ -21,7 +21,11 @@ export async function updateQuiz(formData: FormData) {
   const invalid = !normalized.length || normalized.some((question) => !question.prompt || question.choices.length < 2 || question.choices.some((choice) => !choice.label) || question.choices.filter((choice) => choice.is_correct).length !== 1);
   if (invalid) fail("Each question needs a prompt, at least two answers, and one correct answer.");
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("update_quiz_with_questions", { target_quiz_id: quizId, quiz_title: title, quiz_description: description || null, quiz_passing_score: passingScore, quiz_status: intent, questions: normalized });
+  const { error } = await supabase.rpc("update_quiz_with_questions", { target_quiz_id: quizId, quiz_title: title, quiz_description: description || null, quiz_passing_score: passingScore, quiz_status: intent === "published" ? "published" : "draft", questions: normalized });
   if (error) fail(error.message);
+  if (intent === "review") {
+    const { error: workflowError } = await supabase.rpc("set_content_workflow_status", { content_type: "quiz", target_content_id: quizId, next_status: "review" });
+    if (workflowError) fail(workflowError.message);
+  }
   redirect("/app?updated=1");
 }
