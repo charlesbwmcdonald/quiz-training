@@ -15,7 +15,7 @@ export default async function EditQuizPage({ params, searchParams }: { params: P
   if (!brand?.can_manage_training) redirect("/app");
   const [{ data: auth }, { data }, { data: attemptCounts }, { data: products }, { data: governanceRows }, {data:versions}, {data:reviews}, {data:scheduleRows}] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("quizzes").select("id,title,description,passing_score,status,quiz_questions(id,prompt,image_url,position,quiz_choices(id,label,is_correct,position))").eq("id", quizId).single(),
+    supabase.from("quizzes").select("id,title,description,passing_score,status,quiz_questions(id,prompt,image_url,position,quiz_choices(id,label,is_correct,position))").eq("id", quizId).eq("manufacturer_id",brand.id).single(),
     supabase.rpc("managed_quiz_attempt_counts"),
     supabase.rpc("manufacturer_products_v2"),
     supabase.rpc("manufacturer_content_governance"),

@@ -23,7 +23,7 @@ export default async function AppPage({ searchParams }: { searchParams: Promise<
   const isManager = Boolean(brand?.can_manage_training);
   if (brand && !isManager) redirect(`/m/${brand.slug}/app/my-training`);
   const [{ data, error }, { data: attemptCounts }, { data: courseData }, { data: internalQuizRows }, { data: governanceRows }, {data:scheduleRows}] = await Promise.all([
-    isManager ? supabase.from("quizzes").select("id,title,description,status,passing_score,created_at,quiz_questions(count)").order("created_at", { ascending: false }) : supabase.rpc("learner_training_dashboard"),
+    isManager ? supabase.from("quizzes").select("id,title,description,status,passing_score,created_at,quiz_questions(count)").eq("manufacturer_id", brand.id).order("created_at", { ascending: false }) : supabase.rpc("learner_training_dashboard"),
     isManager ? supabase.rpc("managed_quiz_attempt_counts") : Promise.resolve({ data: [] }),
     isManager ? Promise.resolve({ data: [] }) : supabase.rpc("learner_courses"),
     isManager ? supabase.rpc("internal_assigned_quiz_ids") : Promise.resolve({ data: [] }),
